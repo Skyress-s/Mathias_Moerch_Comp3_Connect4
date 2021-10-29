@@ -32,7 +32,16 @@ void drawBoard(vector<vector<Tile>> a_board) {
 	for (int i = 0; i < a_board[0].size(); i++) {
 		cout << "| ";
 		for (int j = 0; j < a_board.size(); j++) {
+			char item = a_board[j][a_board[0].size() - i - 1].item;
+			if (item == p1) {
+				cout << termcolor::bright_cyan;
+			}
+			else if (item == p2) {
+				cout << termcolor::bright_red;
+			}
 			cout << a_board[j][a_board[0].size() - i - 1].item;
+			cout << termcolor::reset;
+
 			if (a_board.size() - 1 > j) {
 				cout << "  ";
 			}
@@ -53,9 +62,16 @@ int playerChooseSlot(vector<vector<Tile>> a_board) {
 		for (int i = 0; i < width; i++) {
 			char content{ ' ' };
 			if (i == currentChoice) {
-				content = '|';
+				content = activePlayer;
+				if (activePlayer == p1) {
+					cout << termcolor::bright_cyan;
+				}
+				else if (activePlayer == p2) {
+					cout << termcolor::bright_red;
+				}
 			}
 			cout << '[' << content << ']';
+			cout << termcolor::reset;
 		}
 		cout << endl;
 		drawBoard(a_board);
@@ -66,13 +82,20 @@ int playerChooseSlot(vector<vector<Tile>> a_board) {
 			if (currentChoice + 1 < width) {
 				currentChoice++;
 			}
+			else {
+				currentChoice = 0;
+			}
 			break;
 
 		case 'a':
 			if (currentChoice -1 >= 0) {
 				currentChoice--;
 			}
+			else {
+				currentChoice = a_board.size() - 1;
+			}
 			break;
+
 		case ' ':
 			finished = true;
 			break;
@@ -94,59 +117,6 @@ bool isDropPointValid(vector<vector<Tile>> a_board, int a_dropPoint) {
 	else {
 		return false;
 	}
-}
-
-bool isOutOfRange(int x, int y, int add, vector<vector<Tile>> a_board) {
-	if (x + add > a_board.size() - 1 || x + add < 0) {
-		return true;
-	}
-	else if (y + add > a_board[0].size() - 1 || y + add < 0) {
-		return true;
-	}
-	else return false;
-}
-
-//int checkRay(int x, int y, vector<vector<Tile>> a_board, )
-
-bool isWon(int x, int y, vector<vector<Tile>> a_board) {
-	//gets the newest symbol placed
-	char placedSym = a_board[x][y].item;
-
-
-	//checks the / diagonal
-	int points{1};
-	int n{1};
-	bool fin{ false };
-	
-
-	while (!fin) {
-		if (isOutOfRange(x, y, n, a_board)) {
-			break;
-		}
-		
-		if (a_board[x + n][y + n].item == placedSym) {
-			points++;
-		}
-
-		n++;
-		
-	}
-	n = -1;
-	while (!fin) {
-		if (isOutOfRange(x, y, n, a_board)) {
-			break;
-		}
-
-		if (a_board[x + n][y + n].item == placedSym) {
-			points++;
-		}
-		n--;
-	}
-	
-	
-
-	cout << points << endl << endl;
-	return true;
 }
 
 struct position {
@@ -171,8 +141,8 @@ bool isOutOfRange(position pos, vector<vector<Tile>> a_board) {
 	}
 	return false;
 }
-int castRay(position pos, position dir, vector<vector<Tile>> a_board) {
-	char placedSym = a_board[pos.x][pos.y].item;
+void castRay(position pos, position dir, vector<vector<Tile>> a_board, vector<position> &score) {
+	/*char placedSym = a_board[pos.x][pos.y].item;
 	int score{};
 	position rayPos = pos;
 	int i{ 1 };
@@ -185,41 +155,56 @@ int castRay(position pos, position dir, vector<vector<Tile>> a_board) {
 		}
 		i++;
 	}
-	return score;
+	return score;*/
+
+	char placedSym = a_board[pos.x][pos.y].item;
+	//vector<position> score{};
+	
+	int i{ 1 };
+	while (true) {
+		if (isOutOfRange(position(pos.x + dir.x * i, pos.y + dir.y * i), a_board))
+			break;
+
+		if (placedSym == a_board[pos.x + dir.x * i][pos.y + dir.y * i].item) { // shooting ray until it hits a opposite player or empty field
+			score.push_back(position(pos.x + dir.x * i, pos.y + dir.y * i));
+		}
+		i++;
+	}
+	return;
 }
 
 bool isWon2(position pos, vector<vector<Tile>> a_board) {
 	//start with checking diagonal rays
 	//checking //
-	int score = 1;
-	score += castRay(pos, position(1, 1), a_board);
-	score += castRay(pos, position(-1, -1), a_board);
-	cout << " // : " << score << endl;
-	if (score >= 4) return true;
+	vector<position> score{};
+	castRay(pos, position(1, 1), a_board, score);
+	castRay(pos, position(-1, -1), a_board, score);
+	cout << " // : " << score.size() << endl;
+	if (score.size() + 1 >= 4) return true;
 	
 
-	//checking \\ 
-	score = 1;
-	score += castRay(pos, position(-1, +1), a_board);
-	score += castRay(pos, position(+1, -1), a_board);
-	cout << " \\\\ : " << score << endl;
-	if (score >= 4) return true;
+	////checking \\ 
+	//score = 1;
+	//score += castRay(pos, position(-1, +1), a_board);
+	//score += castRay(pos, position(+1, -1), a_board);
+	//cout << " \\\\ : " << score << endl;
+	//if (score >= 4) return true;
 
 
-	//checking --
-	score = 1;
-	score += castRay(pos, position(+1, 0), a_board);
-	score += castRay(pos, position(-1, 0), a_board);
-	cout << " -- : " << score << endl;
-	if (score >= 4) return true;
+	////checking --
+	//score = 1;
+	//score += castRay(pos, position(+1, 0), a_board);
+	//score += castRay(pos, position(-1, 0), a_board);
+	//cout << " -- : " << score << endl;
+	//if (score >= 4) return true;
 
-	
-	//checking ||
-	score = 1;
-	score += castRay(pos, position(0, +1), a_board);
-	score += castRay(pos, position(0, -1), a_board);
-	cout << " || : " << score << endl;
-	if (score >= 4) return true;
+	//
+	////checking ||
+	//score = 1;
+	//score += castRay(pos, position(0, +1), a_board);
+	//score += castRay(pos, position(0, -1), a_board);
+	//cout << " || : " << score << endl;
+	//if (score >= 4) return true;
 
 	return false;
 
@@ -241,50 +226,26 @@ int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
 }
 
 /// <summary>
-/// animates the fall downwards and return the apropiate height value
+/// animates the fall downwards for the newest piece
 /// </summary>
 /// <param name="a_board"></param>
 /// <param name="a_dp"></param>
-/// <returns>int value of the height where the item should be placed</returns>
-int animateFall(vector<vector<Tile>> a_board, int a_dp) {
-	int maxHeight = a_board[0].size() - 1;
-	////starts witha check to see if the edgecase where for when the collum is filled up
-	//if (a_board[a_dp][maxHeight - 1].item != '*') {
+/// <returns></returns>
+void animateFall(vector<vector<Tile>> a_board, position pos, int stepDuration) {
+	int currentHeight = a_board[0].size() - 1;
 
-	//}
-
-
-	int currentHeight = maxHeight;
-	bool foundBottom{ false };
-	while (!foundBottom) {
-		//removes the previous item above
-		if (currentHeight < maxHeight) {
-			a_board[a_dp][currentHeight + 1].item = '*';
+	while (currentHeight > pos.y) {
+		a_board[pos.x][currentHeight].item = activePlayer;
+		if (currentHeight < a_board[0].size() - 1) {
+			a_board[pos.x][currentHeight + 1].item = '*';
 		}
-
-		//checks if you have reached a occupied tile
-		if (a_board[a_dp][currentHeight].item != '*') {
-			return currentHeight + 1;
-		}
-
-
-		a_board[a_dp][currentHeight].item = activePlayer;
-		currentHeight--;
+		
 		system("cls");
 		drawBoard(a_board);
-		Sleep(200);
-
-		//checks if you have reaced the bottom
-		if (currentHeight <= 0) {
-			return 0;
-		}
-
-		
-		
-		
-
-
+		Sleep(stepDuration);
+		currentHeight--;
 	}
+
 }
 
 /// <summary>
@@ -299,19 +260,33 @@ void toggleActivePlayer() {
 	}
 }
 
+void addDotsToConsole(int dots, float duration) {
+	for (int i = 0; i < dots; i++) {
+		Sleep(duration);
+		cout << '.';
+	}
+	Sleep(duration);
+}
+
 void mainGameloop(vector<vector<Tile>> a_board) {
 	bool finishedGame{ false };
 	while (!finishedGame) {
 		//checks if proppoint is valid, if not, return
 		int dropPoint = playerChooseSlot(a_board);
-		if (!isDropPointValid(a_board, dropPoint)) 
-			break;
+		if (!isDropPointValid(a_board, dropPoint)) {
+			cout << "Invalid placement, please choose again";
+			addDotsToConsole(3, 500.f);
+			continue;
+		}
 
 		//int h = animateFall(a_board, dropPoint);
 		int h = calcFallPos(a_board, dropPoint);
+		animateFall(a_board, position(dropPoint, h), 150);
 		a_board[dropPoint][h].item = activePlayer;
 
 		if (isWon2(position(dropPoint, h), a_board)) {
+			system("cls");
+			drawBoard(a_board);
 			cout << activePlayer << " has won!!!!!!!!!!!!" << endl;
 			system("pause");
 			finishedGame = true;
