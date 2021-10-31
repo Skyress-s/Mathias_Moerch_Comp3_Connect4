@@ -363,7 +363,7 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 	while (!finishedGame) {
 	turn++;
 	system("cls");
-		if (activePlayer == p2) {
+		if (activePlayer ==false) {
 			
 			for (int i = 0; i < a_board.size(); i++) {
 				vector<vector<Tile>> tempBoard = a_board;
