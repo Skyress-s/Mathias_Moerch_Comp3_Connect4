@@ -16,6 +16,8 @@ char activePlayer{};
 char const p1 = 'X';
 char const p2 = 'O';
 
+
+
 int turn{};
 
 struct Tile {
@@ -208,6 +210,13 @@ vector<position> scoreOfTile(position pos, vector<vector<Tile>> a_board) {
 	return score;
 }
 
+//int scoreOfBoard(vector<vector<Tile>> a_board, char player) {
+//	//checking x rows
+//	for (int i = 0; i < ; i++) {
+//
+//	}
+//}
+
 int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
 
 	int currentHeight = a_board[0].size() - 1;
@@ -288,17 +297,13 @@ bool isBoardFull(vector<vector<Tile>> a_board) {
 
 int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizing) {
 
+	drawBoard(a_board);
+	system("pause");
+
 	int score = scoreOfTile(pos, a_board).size();
 
 	if (depth == 4) {
 		score = 0;
-	}
-		
-
-	if (turn > 6) {
-	drawBoard(a_board);
-	cout << scoreOfTile(pos, a_board).size() << endl << endl;
-		
 	}
 
 	if (depth == 0 or score >= 4) {
@@ -309,7 +314,12 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 			return  -100000;
 		}
 		else {
-			return score;
+			if (maximizing) {
+				return score;
+			}
+			else {
+				return 0;
+			}
 		}
 	}
 	
@@ -361,9 +371,9 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 void mainGameloop(vector<vector<Tile>> a_board) {
 	bool finishedGame{ false };
 	while (!finishedGame) {
-	turn++;
-	system("cls");
-		if (activePlayer ==false) {
+		turn++;
+		system("cls");
+		if (activePlayer == p2) {
 			
 			for (int i = 0; i < a_board.size(); i++) {
 				vector<vector<Tile>> tempBoard = a_board;
@@ -428,8 +438,7 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 int main() {
 	
 	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{'*', false}));
-
-
+	
 	activePlayer = 'X';
 
 
