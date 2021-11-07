@@ -214,47 +214,89 @@ vector<position> scoreOfTile(position pos, vector<vector<Tile>> a_board) {
 
 int scoreOfBoard(vector<vector<Tile>> a_board, char player) {
 	//checking -- rows (x)
-	int score{};
-
 
 	for (int i = 0; i < a_board[0].size(); i++) {
-		int numInRow = 0;
-		int maxInRow = 0;
-		int lastIndex = 0;
+		int score{};
+		int inRow{};
+		int emptyRow{};
 		for (int j = 0; j < a_board.size(); j++) {
-			if (a_board[j][i].item == player) {
-				numInRow++;
-			}
-			else {
-				numInRow = 0;
-			}
 
-			if (numInRow > maxInRow) {
-				lastIndex = j;
-				maxInRow = numInRow;
+
+			bool hitOpp{ false };
+			if (a_board[j][i].item == player) {
+				inRow++;
 			}
-		}
-		if (maxInRow == 2) {
-			score += 10;
-		}
-		else if (maxInRow == 3) {
-			if (i > 0) {
-				//checks if the piece after last index is open
-				if (a_board[lastIndex + 1][i].item == EMPTY_PIECE && a_board[lastIndex + 1][i-1].item != EMPTY_PIECE) {
-					if (lastIndex - 3 >= 0) {
-						if (a_board[lastIndex - 3][i].item == EMPTY_PIECE && a_board[lastIndex - 3][i-1].item != EMPTY_PIECE) {
-							score += 1000;
-						}
-					}
+			else if (a_board[j][i].item == EMPTY_PIECE) {
+				emptyRow++;
+			}
+			else { // hit enemy
+				
+				if (inRow == 2 && emptyRow >= 2) {
+					score += 2;
+				}
+				else if (inRow == 3 && emptyRow>= 1) {
+					score += 5;
+				}
+				else if (inRow == 4) {
+					score += 10;
 				}
 
+				emptyRow = 0;
+				inRow = 0;
+
+				hitOpp = true;
 			}
-			
+			if (hitOpp == false && j == a_board.size()-1) { // last tile and has not added score
+
+				if (inRow == 2 && emptyRow >= 2) {
+					score += 2;
+				}
+				else if (inRow == 3 && emptyRow >= 1) {
+					score += 5;
+				}
+				else if (inRow == 4) {
+					score += 10;
+				}
+			}
+		}
+
+		inRow = 0;
+		emptyRow = 0;
+		//opponent for loop
+		for (int j = 0; j < a_board.size(); j++) {
+			bool hitOpp{ false };
+			if (a_board[j][i].item != player && a_board[j][i].item != EMPTY_PIECE) {
+				inRow++;
+			}
+			else if (a_board[j][i].item == EMPTY_PIECE) {
+				emptyRow++;
+			}
+			else { // hit enemy
+
+				if (inRow == 3 && emptyRow >= 1) {
+					score -= 400;
+				}
+				
+
+				emptyRow = 0;
+				inRow = 0;
+
+				hitOpp = true;
+			}
+			if (hitOpp == false && j == a_board.size() - 1) { // last tile and has not added score
+
+				if (inRow == 3 && emptyRow >= 1) {
+					score -= 4000;
+				}
+				
+			}
 		}
 
 		cout << score << endl;
+
 	}
-	system("pause");
+		system("pause");
+	
 
 	return 0;
 }
@@ -451,7 +493,7 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 
 		vector<position> score = scoreOfTile(position(dropPoint, h), a_board);
 		cout << score.size() << endl;
-		system("pause");
+		//system("pause");
 
 
 		if (score.size() >= 4) {
