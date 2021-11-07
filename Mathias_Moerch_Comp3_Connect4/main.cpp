@@ -212,93 +212,77 @@ vector<position> scoreOfTile(position pos, vector<vector<Tile>> a_board) {
 	return score;
 }
 
-int scoreOfBoard(vector<vector<Tile>> a_board, char player) {
-	//checking -- rows (x)
 
-	for (int i = 0; i < a_board[0].size(); i++) {
-		int score{};
-		int inRow{};
-		int emptyRow{};
-		for (int j = 0; j < a_board.size(); j++) {
+int evalRowOfFour(vector<int> row, char player) {
+	int score{};
 
-
-			bool hitOpp{ false };
-			if (a_board[j][i].item == player) {
-				inRow++;
-			}
-			else if (a_board[j][i].item == EMPTY_PIECE) {
-				emptyRow++;
-			}
-			else { // hit enemy
-				
-				if (inRow == 2 && emptyRow >= 2) {
-					score += 2;
-				}
-				else if (inRow == 3 && emptyRow>= 1) {
-					score += 5;
-				}
-				else if (inRow == 4) {
-					score += 10;
-				}
-
-				emptyRow = 0;
-				inRow = 0;
-
-				hitOpp = true;
-			}
-			if (hitOpp == false && j == a_board.size()-1) { // last tile and has not added score
-
-				if (inRow == 2 && emptyRow >= 2) {
-					score += 2;
-				}
-				else if (inRow == 3 && emptyRow >= 1) {
-					score += 5;
-				}
-				else if (inRow == 4) {
-					score += 10;
-				}
-			}
+	int inRow{}, empy{}, opponent{};
+	for (int i = 0; i < row.size(); i++) {
+		if (row[i] == player) {
+			inRow++;
 		}
-
-		inRow = 0;
-		emptyRow = 0;
-		//opponent for loop
-		for (int j = 0; j < a_board.size(); j++) {
-			bool hitOpp{ false };
-			if (a_board[j][i].item != player && a_board[j][i].item != EMPTY_PIECE) {
-				inRow++;
-			}
-			else if (a_board[j][i].item == EMPTY_PIECE) {
-				emptyRow++;
-			}
-			else { // hit enemy
-
-				if (inRow == 3 && emptyRow >= 1) {
-					score -= 400;
-				}
-				
-
-				emptyRow = 0;
-				inRow = 0;
-
-				hitOpp = true;
-			}
-			if (hitOpp == false && j == a_board.size() - 1) { // last tile and has not added score
-
-				if (inRow == 3 && emptyRow >= 1) {
-					score -= 4000;
-				}
-				
-			}
+		else if (row[i] == EMPTY_PIECE) {
+			empy++;
 		}
-
-		cout << score << endl;
-
+		else {
+			opponent++;
+		}
 	}
-		system("pause");
+
+
+	if (inRow == 2 && empy == 2) {
+		score += 2;
+	}
+	else if (inRow == 3 && empy == 1) {
+		score += 4;
+	}
+	else if (opponent == 3 && empy == 1) {
+		score += -4;
+	}
+
+
+	return score;
+
+}
+
+int evalLine(vector<int> arr, char player) {
+	int score{};
+	for (int j = 0; j < arr.size() - 3; j++) { // loops thorough four wide segments at a time
+		vector<int> arr2{};
+		for (int h = 0; h < 4; h++) { // creates each segment
+			arr2.push_back(arr[j + h]);
+			score += evalRowOfFour(arr2, player);
+		}
+	}
+	return score;
+
+}
+
+int scoreOfBoard(vector<vector<Tile>> a_board, char player) { // for the score i used some of the scruture from this connect four alg https://github.com/KeithGalli/Connect4-Python/blob/503c0b4807001e7ea43a039cb234a4e55c4b226c/connect4_with_ai.py#L85
+	//checking -- rows (x - axis)
+	int score{};
+	for (int i = 0; i < a_board[0].size(); i++) {
+		//creating a vector for a row
+		vector<int> arr{}; // creates an array for the entire row
+		for (int j = 0; j < a_board.size(); j++) {
+			arr.push_back(a_board[j][i].item);
+		}
+		score += evalLine(arr, player);
+	}
+	
+	// checking the || collums (y - axis)
+	for (int i = 0; i < a_board.size(); i++) {
+		vector<int> arr{};
+		for (int j = 0; j < a_board[0].size(); j++) {
+			arr.push_back(a_board[i][j].item);
+		}
+		score += evalLine(arr, player);
+	}
 	
 
-	return 0;
+
+	
+	return score;
 }
 
 int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
@@ -381,40 +365,38 @@ bool isBoardFull(vector<vector<Tile>> a_board) {
 
 int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizing) {
 
-	drawBoard(a_board);
-	system("pause");
+	/*drawBoard(a_board);
+	system("pause");*/
 
 	int score = scoreOfTile(pos, a_board).size();
 
-	if (depth == 4) {
-		score = 0;
-	}
 
-	if (depth == 0 or score >= 4) {
+	if (depth == 0 || score >= 4) {
 		if (score >= 4 && maximizing == true) {
-			return  +100000;
+			return  +10000;
 		}
 		else if (score >= 4 && maximizing == false) {
-			return  -100000;
+			return  -10000;
 		}
 		else {
 			if (maximizing) {
-				return score;
+				return scoreOfBoard(a_board, p1);
 			}
 			else {
-				return 0;
+				return scoreOfBoard(a_board, p2);
 			}
+
 		}
 	}
+
+	/*drawBoard(a_board);
+	cout << scoreOfBoard(a_board, p2) << endl;
+	system("pause");*/
 	
-	//cout << "DEPTH IS " << depth << endl;
-	//cout << "maximizing : " << maximizing << endl;
-	//system("pause");
 	int maxEval{};
 	if (maximizing) {
 		int maxEval = -10000000;
 		for (int i = 0; i < a_board.size(); i++) {
-			//vector<vector<Tile>> c_board = a_board;
 			if (isDropPointValid(a_board, i) == false) {
 				continue;
 			}
@@ -457,7 +439,7 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 	while (!finishedGame) {
 		turn++;
 		system("cls");
-		if (activePlayer == false) {
+		if (activePlayer == p2) {
 			
 			for (int i = 0; i < a_board.size(); i++) {
 				vector<vector<Tile>> tempBoard = a_board;
