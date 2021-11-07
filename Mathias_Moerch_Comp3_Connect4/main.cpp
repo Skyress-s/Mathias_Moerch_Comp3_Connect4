@@ -16,6 +16,8 @@ char activePlayer{};
 char const p1 = 'X';
 char const p2 = 'O';
 
+#define EMPTY_PIECE '*'
+
 
 
 int turn{};
@@ -210,12 +212,52 @@ vector<position> scoreOfTile(position pos, vector<vector<Tile>> a_board) {
 	return score;
 }
 
-//int scoreOfBoard(vector<vector<Tile>> a_board, char player) {
-//	//checking x rows
-//	for (int i = 0; i < ; i++) {
-//
-//	}
-//}
+int scoreOfBoard(vector<vector<Tile>> a_board, char player) {
+	//checking -- rows (x)
+	int score{};
+
+
+	for (int i = 0; i < a_board[0].size(); i++) {
+		int numInRow = 0;
+		int maxInRow = 0;
+		int lastIndex = 0;
+		for (int j = 0; j < a_board.size(); j++) {
+			if (a_board[j][i].item == player) {
+				numInRow++;
+			}
+			else {
+				numInRow = 0;
+			}
+
+			if (numInRow > maxInRow) {
+				lastIndex = j;
+				maxInRow = numInRow;
+			}
+		}
+		if (maxInRow == 2) {
+			score += 10;
+		}
+		else if (maxInRow == 3) {
+			if (i > 0) {
+				//checks if the piece after last index is open
+				if (a_board[lastIndex + 1][i].item == EMPTY_PIECE && a_board[lastIndex + 1][i-1].item != EMPTY_PIECE) {
+					if (lastIndex - 3 >= 0) {
+						if (a_board[lastIndex - 3][i].item == EMPTY_PIECE && a_board[lastIndex - 3][i-1].item != EMPTY_PIECE) {
+							score += 1000;
+						}
+					}
+				}
+
+			}
+			
+		}
+
+		cout << score << endl;
+	}
+	system("pause");
+
+	return 0;
+}
 
 int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
 
@@ -373,7 +415,7 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 	while (!finishedGame) {
 		turn++;
 		system("cls");
-		if (activePlayer == p2) {
+		if (activePlayer == false) {
 			
 			for (int i = 0; i < a_board.size(); i++) {
 				vector<vector<Tile>> tempBoard = a_board;
@@ -429,6 +471,8 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 			finishedGame = true;
 		}
 
+
+		scoreOfBoard(a_board, activePlayer);
 		toggleActivePlayer();
 	}
 }
