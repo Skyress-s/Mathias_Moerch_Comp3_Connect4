@@ -246,45 +246,7 @@ int evalRowOfFour(vector<int> row, char player) {
 
 }
 
-int evalLine(vector<int> arr, char player) {
-	int score{};
-	for (int j = 0; j < arr.size() - 3; j++) { // loops thorough four wide segments at a time
-		vector<int> arr2{};
-		for (int h = 0; h < 4; h++) { // creates each segment
-			arr2.push_back(arr[j + h]);
-			score += evalRowOfFour(arr2, player);
-		}
-	}
-	return score;
 
-}
-
-int scoreOfBoard(vector<vector<Tile>> a_board, char player) { // for the score i used some of the scruture from this connect four alg https://github.com/KeithGalli/Connect4-Python/blob/503c0b4807001e7ea43a039cb234a4e55c4b226c/connect4_with_ai.py#L85
-	//checking -- rows (x - axis)
-	int score{};
-	for (int i = 0; i < a_board[0].size(); i++) {
-		//creating a vector for a row
-		vector<int> arr{}; // creates an array for the entire row
-		for (int j = 0; j < a_board.size(); j++) {
-			arr.push_back(a_board[j][i].item);
-		}
-		score += evalLine(arr, player);
-	}
-	
-	// checking the || collums (y - axis)
-	for (int i = 0; i < a_board.size(); i++) {
-		vector<int> arr{};
-		for (int j = 0; j < a_board[0].size(); j++) {
-			arr.push_back(a_board[i][j].item);
-		}
-		score += evalLine(arr, player);
-	}
-	
-
-
-	
-	return score;
-}
 
 int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
 
@@ -363,6 +325,43 @@ bool isBoardFull(vector<vector<Tile>> a_board) {
 }
 
 
+int evalLine(vector<int> arr, char player) {
+	int score{};
+	for (int j = 0; j < arr.size() - 3; j++) { // loops thorough four wide segments at a time
+		vector<int> arr2{};
+		for (int h = 0; h < 4; h++) { // creates each segment
+			arr2.push_back(arr[j + h]);
+			score += evalRowOfFour(arr2, player);
+		}
+	}
+	return score;
+
+}
+
+int scoreOfBoard(vector<vector<Tile>> a_board, char player) { // for the score i used some of the scruture from this connect four alg https://github.com/KeithGalli/Connect4-Python/blob/503c0b4807001e7ea43a039cb234a4e55c4b226c/connect4_with_ai.py#L85
+	//checking -- rows (x - axis)
+	int score{};
+	for (int i = 0; i < a_board[0].size(); i++) {
+		//creating a vector for a row
+		vector<int> arr{}; // creates an array for the entire row
+		for (int j = 0; j < a_board.size(); j++) {
+			arr.push_back(a_board[j][i].item);
+		}
+		score += evalLine(arr, player);
+	}
+
+	// checking the || collums (y - axis)
+	for (int i = 0; i < a_board.size(); i++) {
+		vector<int> arr{};
+		for (int j = 0; j < a_board[0].size(); j++) {
+			arr.push_back(a_board[i][j].item);
+		}
+		score += evalLine(arr, player);
+	}
+
+	return score;
+}
+
 
 int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizing) {
 
@@ -374,10 +373,16 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 
 	if (depth == 0 || score >= 4) {
 		if (score >= 4 && maximizing == true) {
-			return  +10000;
+			/*drawBoard(a_board);
+			cout << "WIN!" << endl;
+			system("pause");*/
+			return  +100;
 		}
 		else if (score >= 4 && maximizing == false) {
-			return  -10000;
+			/*drawBoard(a_board);
+			cout << "LOSS!" << endl;
+			system("pause");*/
+			return  -100;
 		}
 		else {
 			return scoreOfBoard(a_board, p2);
@@ -386,17 +391,17 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 	}
 
 	
-	int maxEval{};
+	//int maxEval{};
 	if (maximizing) {
-		int maxEval = -10000000;
+		int maxEval = -100000;
 		for (int i = 0; i < a_board.size(); i++) {
 			if (isDropPointValid(a_board, i) == false) {
 				continue;
 			}
 
 			int n = calcFallPos(a_board, i); // gets the fallposition
-			a_board[i][n].item = p2; // the new gamestate
 			char temp = a_board[i][n].item;
+			a_board[i][n].item = p2; // the new gamestate
 
 			int eval = minimax(a_board, position(i, n), depth - 1, false);
 			maxEval = max(maxEval, eval); 
@@ -406,7 +411,7 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 		return maxEval;
 	}
 	else {
-		int maxEval = 10000000;
+		int maxEval = 100000;
 		for (int i = 0; i < a_board.size(); i++) {
 			//vector<vector<Tile>> c_board = a_board;
 			if (isDropPointValid(a_board, i) == false) {
@@ -440,13 +445,21 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 				int height = calcFallPos(tempBoard, i);
 				tempBoard[i][height].item = p2;
 
-				//system("cls");
-				int score = minimax(tempBoard, position(0, 0), 4, false);
+				/*if (scoreOfTile(position(i,height), tempBoard).size() >= 4) {
+					cout << "MOVE HERE TO WIN!!" << endl;
+				}*/
+
+
+				int score = minimax(tempBoard, position(i, height), 3, false);
 				//scores.push_back(score);
 
 				cout << "drop point position " << i + 1 << "  - Gives score : " << score << endl;
 			}
 			system("pause");
+
+
+
+			//minimax(a_board, position(0, 0), 4, true);
 
 			
 		}
