@@ -1,8 +1,132 @@
 #include "DECLER.h"
+#include <sstream>
 
+// EXTERNAL DATA -----------------------------
+
+class Player {
+public:
+	Player();
+	~Player();
+	string name{};
+	int wins{};
+	int losses{};
+
+private:
+
+};
+Player::Player() {
+}
+Player::~Player() {
+}
+
+
+vector<Player> LoadFromLog(string filepath) {
+	////creates a file for reading (ifstream)
+	//std::ifstream file{};
+	////opens the specified text file via path
+	//file.open(filepath);
+
+
+	//vector<Player> players{}; // the players to return
+	//string seg{}; // segment of each line seperated by delimiter ":"
+	//Player tempPlayer{}; // temp player to push back to players
+	//int i{0};
+	//vector<string> words{};
+
+	//while (getline(file, seg, ':')) { // reading the file and making tmp string seperated by the delimiter":" and individual lines"\n"
+	//	words.push_back(seg);
+	//	switch (i) { // cases for with slot in Player class to change
+	//	case 0:
+	//		tempPlayer.name = seg;
+	//		break;
+
+	//	case 1:
+	//		tempPlayer.wins = stoi(seg);
+	//		break;
+
+	//	case 2: // push back the temp class and reset the i counter
+	//		tempPlayer.losses = stoi(seg);
+	//		players.push_back(tempPlayer);
+	//		i = 0;
+	//		break;
+
+	//	default:
+	//		break;
+	//	}
+	//	seg = "";
+	//	i++; // incrementing i for each run of while loop (for the cases system to work)
+	//}
+	// ------------------------------------
+
+	
+	//creates a file for reading (ifstream)
+	std::ifstream file{};
+	//opens the specified text file via path
+	file.open(filepath);
+
+
+	string seg{}; // segment of each line seperated by delimiter ":"
+	vector<string> words{};
+	while (getline(file, seg, ':')) { // reading the file and making tmp string seperated by the delimiter":" and individual lines"\n"
+		words.push_back(seg);
+		
+	}
+	file.close(); // closes file
+
+
+	for (int i = 0; i < words.size(); i++) {
+		cout << "Bingus" << words[i] << endl; // WHY DOSENT THIS WORK
+	}
+	system("pause");
+	
+	vector<Player> players{}; // the players to return
+	for (int i = 0; i < words.size(); i++) {
+		Player tempPlayer{}; // temp player to push back to players
+		tempPlayer.name = words[i];
+		i++;
+		tempPlayer.wins = stoi(words[i]);
+		i++;
+		tempPlayer.losses = stoi(words[i]);
+		players.push_back(tempPlayer);
+	}
+
+
+	return players;
+}
+
+void WriteToLog(vector<Player> a_players, string filepath) {
+	std::ofstream file{};
+	file.open(filepath);
+	if (file.good() == false) {
+		cout << "Could not load file..." << endl;
+		system("pause");
+		return;
+	}
+	
+	for (int i = 0; i < a_players.size(); i++) {
+		file << a_players[i].name << ":" << a_players[i].wins << ":" << a_players[i].losses << endl;
+	}
+
+	file << "TEST" << ":" << 100 << ":" << 69 << endl;
+
+	file.close();
+}
 
 
 int main() {
+
+	vector<Player> players = LoadFromLog("Players.txt");
+	
+	//WriteToLog(players, "Players.txt");
+
+	for (int i = 0; i < players.size(); i++) {
+		cout << players[i].name << endl;
+		cout << players[i].wins << endl;
+		cout << players[i].losses << endl;
+		cout << endl;
+	}
+
+	return 0;
 
 	InitGame();
 
@@ -581,4 +705,5 @@ void assignWinnerTilesBoard(vector<vector<Tile>> &a_board, vector<Position> pose
 		a_board[ poses[i].x ][ poses[i].y ].winnerTile = true;
 	}
 }
+
 
