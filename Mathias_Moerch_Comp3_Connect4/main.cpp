@@ -150,6 +150,8 @@ bool isOutOfRange(position pos, vector<vector<Tile>> a_board) {
 	}
 	return false;
 }
+
+
 void castRay(position pos, position dir, vector<vector<Tile>> a_board, vector<position> &score) {
 	char placedSym = a_board[pos.x][pos.y].item;
 	//vector<position> score{};
