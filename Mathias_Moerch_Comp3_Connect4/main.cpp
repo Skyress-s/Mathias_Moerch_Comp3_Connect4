@@ -177,7 +177,6 @@ vector<position> scoreOfTile(position pos, vector<vector<Tile>> a_board) {
 	vector<position> score{};
 
 
-
 	castRay(pos, position(1, 1), a_board, score);
 	castRay(pos, position(-1, -1), a_board, score);
 	//cout << " // : " << score.size() << endl;
@@ -188,7 +187,7 @@ vector<position> scoreOfTile(position pos, vector<vector<Tile>> a_board) {
 	score.clear();
 	castRay(pos, position(-1, +1), a_board, score);
 	castRay(pos, position(+1, -1), a_board, score);
-	//cout << " \\\\ : " << score.size() << endl;
+	
 	score.push_back(pos);
 	if (score.size() >= 4) return score;
 
@@ -344,9 +343,6 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 
 	int score = scoreOfTile(pos, a_board).size();
 
-	if (depth == 4) {
-		score = 0;
-	}
 
 	if (depth == 0 or score >= 4) {
 		if (score >= 4 && maximizing == true) {
@@ -415,7 +411,7 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 	while (!finishedGame) {
 		turn++;
 		system("cls");
-		if (activePlayer == false) {
+		if (activePlayer == p2) {
 			
 			for (int i = 0; i < a_board.size(); i++) {
 				vector<vector<Tile>> tempBoard = a_board;
