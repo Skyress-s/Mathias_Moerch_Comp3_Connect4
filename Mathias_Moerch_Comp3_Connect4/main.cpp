@@ -213,51 +213,77 @@ vector<position> scoreOfTile(position pos, vector<vector<Tile>> a_board) {
 	return score;
 }
 
-int scoreOfBoard(vector<vector<Tile>> a_board, char player) {
-	//checking -- rows (x)
+
+int evalRowOfFour(vector<int> row, char player) {
 	int score{};
 
-
-	for (int i = 0; i < a_board[0].size(); i++) {
-		int numInRow = 0;
-		int maxInRow = 0;
-		int lastIndex = 0;
-		for (int j = 0; j < a_board.size(); j++) {
-			if (a_board[j][i].item == player) {
-				numInRow++;
-			}
-			else {
-				numInRow = 0;
-			}
-
-			if (numInRow > maxInRow) {
-				lastIndex = j;
-				maxInRow = numInRow;
-			}
+	int inRow{}, empy{}, opponent{};
+	for (int i = 0; i < row.size(); i++) {
+		if (row[i] == player) {
+			inRow++;
 		}
-		if (maxInRow == 2) {
-			score += 10;
+		else if (row[i] == EMPTY_PIECE) {
+			empy++;
 		}
-		else if (maxInRow == 3) {
-			if (i > 0) {
-				//checks if the piece after last index is open
-				if (a_board[lastIndex + 1][i].item == EMPTY_PIECE && a_board[lastIndex + 1][i-1].item != EMPTY_PIECE) {
-					if (lastIndex - 3 >= 0) {
-						if (a_board[lastIndex - 3][i].item == EMPTY_PIECE && a_board[lastIndex - 3][i-1].item != EMPTY_PIECE) {
-							score += 1000;
-						}
-					}
-				}
-
-			}
-			
+		else {
+			opponent++;
 		}
-
-		cout << score << endl;
 	}
-	system("pause");
 
-	return 0;
+
+	if (inRow == 2 && empy == 2) {
+		score += 2;
+	}
+	else if (inRow == 3 && empy == 1) {
+		score += 4;
+	}
+	else if (opponent == 3 && empy == 1) {
+		score += -4;
+	}
+
+
+	return score;
+
+}
+
+int evalLine(vector<int> arr, char player) {
+	int score{};
+	for (int j = 0; j < arr.size() - 3; j++) { // loops thorough four wide segments at a time
+		vector<int> arr2{};
+		for (int h = 0; h < 4; h++) { // creates each segment
+			arr2.push_back(arr[j + h]);
+			score += evalRowOfFour(arr2, player);
+		}
+	}
+	return score;
+
+}
+
+int scoreOfBoard(vector<vector<Tile>> a_board, char player) { // for the score i used some of the scruture from this connect four alg https://github.com/KeithGalli/Connect4-Python/blob/503c0b4807001e7ea43a039cb234a4e55c4b226c/connect4_with_ai.py#L85
+	//checking -- rows (x - axis)
+	int score{};
+	for (int i = 0; i < a_board[0].size(); i++) {
+		//creating a vector for a row
+		vector<int> arr{}; // creates an array for the entire row
+		for (int j = 0; j < a_board.size(); j++) {
+			arr.push_back(a_board[j][i].item);
+		}
+		score += evalLine(arr, player);
+	}
+	
+	// checking the || collums (y - axis)
+	for (int i = 0; i < a_board.size(); i++) {
+		vector<int> arr{};
+		for (int j = 0; j < a_board[0].size(); j++) {
+			arr.push_back(a_board[i][j].item);
+		}
+		score += evalLine(arr, player);
+	}
+	
+
+
+	
+	return score;
 }
 
 int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
@@ -340,37 +366,38 @@ bool isBoardFull(vector<vector<Tile>> a_board) {
 
 int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizing) {
 
-	drawBoard(a_board);
-	system("pause");
+	/*drawBoard(a_board);
+	system("pause");*/
 
 	int score = scoreOfTile(pos, a_board).size();
 
 
-	if (depth == 0 or score >= 4) {
+	if (depth == 0 || score >= 4) {
 		if (score >= 4 && maximizing == true) {
-			return  +100000;
+			return  +10000;
 		}
 		else if (score >= 4 && maximizing == false) {
-			return  -100000;
+			return  -10000;
 		}
 		else {
 			if (maximizing) {
-				return score;
+				return scoreOfBoard(a_board, p1);
 			}
 			else {
-				return 0;
+				return scoreOfBoard(a_board, p2);
 			}
+
 		}
 	}
+
+	/*drawBoard(a_board);
+	cout << scoreOfBoard(a_board, p2) << endl;
+	system("pause");*/
 	
-	//cout << "DEPTH IS " << depth << endl;
-	//cout << "maximizing : " << maximizing << endl;
-	//system("pause");
 	int maxEval{};
 	if (maximizing) {
 		int maxEval = -10000000;
 		for (int i = 0; i < a_board.size(); i++) {
-			//vector<vector<Tile>> c_board = a_board;
 			if (isDropPointValid(a_board, i) == false) {
 				continue;
 			}
@@ -449,7 +476,7 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 
 		vector<position> score = scoreOfTile(position(dropPoint, h), a_board);
 		cout << score.size() << endl;
-		system("pause");
+		//system("pause");
 
 
 		if (score.size() >= 4) {
