@@ -1,13 +1,16 @@
 #pragma once
 
+
 #include <iostream>
 #include <vector>
-#include "termcolor.hpp"
 #include <conio.h>
 #include <string>
 #include <cwchar>
 #include <Windows.h>
 
+#include "termcolor.hpp"
+#include "Position.h"
+#include "Tile.h"
 
 using std::cin;
 using std::cout;
@@ -26,6 +29,27 @@ string p2Name{ "PLAYER TWO" };
 #define EMPTY_PIECE '*'
 int turn{};
 
+/// <summary>
+/// function for clearing the cin buffer for errors and emptying it of left over data
+/// Gotten from Johannes TA
+/// </summary>
+void ClearCin();
+
+
+
+
+
+// AI --------------------------------------
+
+vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool maximizing);
+
+vector<Position> scoreOfTile(Position pos, vector<vector<Tile>> a_board);
+
+int evalLine(vector<int> arr, char player);
+
+int evalRowOfFour(vector<int> row, char player);
+
+// GAME LOGIC ------------------------------
 
 /// <summary>
 /// Can choose between the options vector, 
@@ -39,8 +63,33 @@ int Choice(vector<string> options, string title);
 
 void InitGame();
 
+void inputNames();
 
-/// <summary>
-/// clear cin func from johannes TA 
-/// </summary>
-void ClearCin();
+void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI);
+
+int scoreOfBoard(vector<vector<Tile>> a_board, char player);
+
+bool isBoardFull(vector<vector<Tile>> a_board);
+
+void toggleActivePlayer();
+
+int calcFallPos(vector<vector<Tile>> a_board, int a_dp);
+
+void castRay(Position pos, Position dir, vector<vector<Tile>> a_board, vector<Position>& score);
+
+bool isOutOfRange(Position pos, vector<vector<Tile>> a_board);
+
+bool isDropPointValid(vector<vector<Tile>> a_board, int a_dropPoint);
+
+// VISUAL ----------------------------------
+
+void addDotsToConsole(int dots, float duration);
+
+void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration);
+
+void drawBoard(vector<vector<Tile>> a_board);
+
+int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI);
+
+void assignWinnerTilesBoard(vector<vector<Tile>>& a_board, vector<Position> poses);
+
