@@ -1,26 +1,7 @@
-#include <iostream>
-#include <vector>
-#include "termcolor.hpp"
-#include <conio.h>
-#include <string>
-#include <cwchar>
-#include <Windows.h>
-
-using std::cin;
-using std::cout;
-using std::endl;
-using std::vector;
-using std::string;
-
-char activePlayer{};
-char const p1 = 'X';
-char const p2 = 'O';
-
-#define EMPTY_PIECE '*'
+#include "DECLER.h"
 
 
 
-int turn{};
 
 struct Tile {
 	char item{};
@@ -60,11 +41,25 @@ void drawBoard(vector<vector<Tile>> a_board) {
 }
 
 
-int playerChooseSlot(vector<vector<Tile>> a_board) {
+int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 	int currentChoice{ 0 };
 	bool finished{ false };
 	while (!finished) {
 		system("cls");
+		//displays the active player
+		if (activePlayer == p1) {
+			cout << p1Name;
+		}
+		else {
+			cout << p2Name;
+		}
+		cout << "'s turn!";
+		if (a_activeAI) {
+			cout << "  (AI)";
+		}
+			
+		cout << endl << endl;
+
 
 		//draws the choice bar
 		cout << " ";
@@ -362,7 +357,15 @@ int scoreOfBoard(vector<vector<Tile>> a_board, char player) { // for the score i
 	return score;
 }
 
-
+/// <summary>
+/// for the score i used some of the scruture from this connect four alg https://github.com/KeithGalli/Connect4-Python/blob/503c0b4807001e7ea43a039cb234a4e55c4b226c/connect4_with_ai.py#L85
+/// Implementation of the minimax alg, choses based of the heuristic value of the board and end of game scores
+/// </summary>
+/// <param name="a_board"></param>
+/// <param name="pos"></param>
+/// <param name="depth"></param>
+/// <param name="maximizing"></param>
+/// <returns>return vector<int>(2), 0 is score, 1 is path</returns>
 vector<int> minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizing) { // first is score, second is path
 
 	/*drawBoard(a_board);
@@ -438,18 +441,14 @@ vector<int> minimax(vector<vector<Tile>> a_board, position pos, int depth, bool 
 }
 
 
-void mainGameloop(vector<vector<Tile>> a_board) {
+void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 	bool finishedGame{ false };
+	
 	while (!finishedGame) {
 		turn++;
 		system("cls");
 		int dropPoint{};
-		if (activePlayer == p2) {
-			
-			
-
-
-
+		if (activePlayer == p2 && a_activeAI) {
 			vector<int>arr= minimax(a_board, position(0, 0), 4, true);
 			/*cout << "Score : " << arr[0] << "   Path : " << arr[1] << endl;
 			system("pause");*/
@@ -457,18 +456,15 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 		}
 		else
 		{
-
-		//checks if proppoint is valid, if not, return
-		
-		
-			dropPoint = playerChooseSlot(a_board);
-
+			dropPoint = playerChooseSlot(a_board, a_activeAI);
+			if (!isDropPointValid(a_board, dropPoint)) {
+				cout << "Invalid placement, please choose again";
+				addDotsToConsole(3, 500.f);
+				continue;
+			}
 		}
-		if (!isDropPointValid(a_board, dropPoint)) {
-			cout << "Invalid placement, please choose again";
-			addDotsToConsole(3, 500.f);
-			continue;
-		}
+
+
 
 		//int h = animateFall(a_board, dropPoint);
 		int h = calcFallPos(a_board, dropPoint);
@@ -482,10 +478,18 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 
 		if (score.size() >= 4) {
 			assignWinnerTilesBoard(a_board, score);
+
+			string winningPlayer{};
+			if (activePlayer == p1) 
+				winningPlayer = p1Name;
+			else
+				winningPlayer = p2Name;
+
+
 			system("cls");
 			drawBoard(a_board);
+			cout << winningPlayer << " has won!" << endl;
 			system("pause");
-			cout << activePlayer << " has won!" << endl;
 			finishedGame = true;
 		}
 
@@ -501,18 +505,101 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 		scoreOfBoard(a_board, activePlayer);
 		toggleActivePlayer();
 	}
+
+	//play again ? 
+	int ch = Choice({ "Yes", "no" }, "Do you want to play again?");
+	if (ch == 0) {
+		InitGame();
+	}
+	else {
+		
+	}
+
 }
 
 
+int Choice(vector<string> options, string title) {
+	//defines current choice, this will be used as the return value and to determine where to draw the arrow
+	int currentChoice{};
+	bool accAns{};
+	while (!accAns) {
+		system("cls");
+		cout << title << endl << endl;
+		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
+			if (currentChoice == i) {
+				cout << " ->   ";
+			}
+			else {
+				cout << "    ";
+			}
+			cout << options[i] << endl;
+		}
+
+		char input = _getch();
+		switch (tolower(input)) {
+		case 'w': // if by pressing w, you go under 0, reset to top of array
+			if (currentChoice - 1 < 0) {
+				currentChoice = options.size() - 1;
+				break;
+			}
+			currentChoice += -1;
+			break;
+
+		case 's':// if by pressing s, you go over options size, reset to bottom of array
+			if (currentChoice + 1 >= options.size()) {
+				currentChoice = 0;
+				break;
+			}
+			currentChoice += 1;
+			break;
+
+		case ' ':
+			accAns = true;
+			break;
+
+		default:
+			break;
+		}
+	}
+	return currentChoice;
+}
+
+void ClearCin() { 
+	std::cin.clear();    //Clears eventual errors from buffer
+	std::cin.ignore(32767, '\n');    //clears the buffer if anything is there
+}
+
+void inputNames() {
+	cout << "Please input player one name : " ;
+	std::getline(cin, p1Name);
+	cout << endl;
+
+	cout << "Please input player two name : " ;
+	std::getline(cin, p2Name);
+	cout << endl;
+}
+
+void InitGame() {
+	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{ '*', false }));
+
+	activePlayer = 'X';
+
+	int AiAns = Choice({ "yes", "no" }, "Do You want to play agenst a AI? (AI is always second player)");
+	bool activeAI{ false };
+	if (AiAns == 0)
+		activeAI = true;
+	else
+		activeAI = false;
+
+	inputNames();
+	mainGameloop(board, activeAI);
+}
 
 int main() {
 	
-	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{'*', false}));
+	InitGame();
+
 	
-	activePlayer = 'X';
-
-
-	mainGameloop(board);
 	return 0 ;
 
 }
