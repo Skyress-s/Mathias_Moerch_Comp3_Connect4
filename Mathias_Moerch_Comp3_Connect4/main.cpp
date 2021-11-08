@@ -363,29 +363,27 @@ int scoreOfBoard(vector<vector<Tile>> a_board, char player) { // for the score i
 }
 
 
-int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizing) {
+vector<int> minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizing) { // first is score, second is path
 
 	/*drawBoard(a_board);
 	system("pause");*/
 
 	int score = scoreOfTile(pos, a_board).size();
-
-
 	if (depth == 0 || score >= 4) {
 		if (score >= 4 && maximizing == true) {
 			/*drawBoard(a_board);
 			cout << "WIN!" << endl;
 			system("pause");*/
-			return  +100;
+			return  vector<int>{-1000, pos.x};
 		}
 		else if (score >= 4 && maximizing == false) {
 			/*drawBoard(a_board);
 			cout << "LOSS!" << endl;
 			system("pause");*/
-			return  -100;
+			return  vector<int>{1000, pos.x};
 		}
 		else {
-			return scoreOfBoard(a_board, p2);
+			return vector<int>{ scoreOfBoard(a_board, p2), pos.x};
 
 		}
 	}
@@ -394,6 +392,7 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 	//int maxEval{};
 	if (maximizing) {
 		int maxEval = -100000;
+		int path = -100;
 		for (int i = 0; i < a_board.size(); i++) {
 			if (isDropPointValid(a_board, i) == false) {
 				continue;
@@ -403,15 +402,19 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 			char temp = a_board[i][n].item;
 			a_board[i][n].item = p2; // the new gamestate
 
-			int eval = minimax(a_board, position(i, n), depth - 1, false);
+			int eval = minimax(a_board, position(i, n), depth - 1, false)[0];
+			if (maxEval < eval) {
+				path = i;
+			}
 			maxEval = max(maxEval, eval); 
 
 			a_board[i][n].item = temp; // reverses the change, for next iteration of for loop
 		}
-		return maxEval;
+		return vector<int>{maxEval, path}/*maxEval*/;
 	}
 	else {
 		int maxEval = 100000;
+		int path = 100;
 		for (int i = 0; i < a_board.size(); i++) {
 			//vector<vector<Tile>> c_board = a_board;
 			if (isDropPointValid(a_board, i) == false) {
@@ -422,12 +425,15 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 			char temp = a_board[i][n].item;
 			a_board[i][n].item = p1; // the new gamestate
 			
-			int eval = minimax(a_board, position(i, n), depth - 1, true);
+			int eval = minimax(a_board, position(i, n), depth - 1, true)[0];
+			if (maxEval > eval) {
+				path = i;
+			}
 			maxEval = min(maxEval, eval);
 
 			a_board[i][n].item = temp;
 		}
-		return maxEval;
+		return vector<int>{maxEval, path}/*maxEval*/;
 	}
 }
 
@@ -437,37 +443,27 @@ void mainGameloop(vector<vector<Tile>> a_board) {
 	while (!finishedGame) {
 		turn++;
 		system("cls");
+		int dropPoint{};
 		if (activePlayer == p2) {
 			
-			for (int i = 0; i < a_board.size(); i++) {
-				vector<vector<Tile>> tempBoard = a_board;
-
-				int height = calcFallPos(tempBoard, i);
-				tempBoard[i][height].item = p2;
-
-				/*if (scoreOfTile(position(i,height), tempBoard).size() >= 4) {
-					cout << "MOVE HERE TO WIN!!" << endl;
-				}*/
-
-
-				int score = minimax(tempBoard, position(i, height), 3, false);
-				//scores.push_back(score);
-
-				cout << "drop point position " << i + 1 << "  - Gives score : " << score << endl;
-			}
-			system("pause");
-
-
-
-			//minimax(a_board, position(0, 0), 4, true);
-
 			
+
+
+
+			vector<int>arr= minimax(a_board, position(0, 0), 4, true);
+			/*cout << "Score : " << arr[0] << "   Path : " << arr[1] << endl;
+			system("pause");*/
+			dropPoint = arr[1];
 		}
-
-
+		else
+		{
 
 		//checks if proppoint is valid, if not, return
-		int dropPoint = playerChooseSlot(a_board);
+		
+		
+			dropPoint = playerChooseSlot(a_board);
+
+		}
 		if (!isDropPointValid(a_board, dropPoint)) {
 			cout << "Invalid placement, please choose again";
 			addDotsToConsole(3, 500.f);
