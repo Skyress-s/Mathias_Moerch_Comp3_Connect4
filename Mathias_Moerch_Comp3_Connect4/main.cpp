@@ -234,7 +234,7 @@ int evalRowOfFour(vector<int> row, char player) {
 		score += 2;
 	}
 	else if (inRow == 3 && empy == 1) {
-		score += 4;
+		score += 5;
 	}
 	else if (opponent == 3 && empy == 1) {
 		score += -4;
@@ -379,19 +379,11 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 			return  -10000;
 		}
 		else {
-			if (maximizing) {
-				return scoreOfBoard(a_board, p1);
-			}
-			else {
-				return scoreOfBoard(a_board, p2);
-			}
+			return scoreOfBoard(a_board, p2);
 
 		}
 	}
 
-	/*drawBoard(a_board);
-	cout << scoreOfBoard(a_board, p2) << endl;
-	system("pause");*/
 	
 	int maxEval{};
 	if (maximizing) {
@@ -402,13 +394,13 @@ int minimax(vector<vector<Tile>> a_board, position pos, int depth, bool maximizi
 			}
 
 			int n = calcFallPos(a_board, i); // gets the fallposition
-			char temp = a_board[i][n].item;
 			a_board[i][n].item = p2; // the new gamestate
+			char temp = a_board[i][n].item;
 
 			int eval = minimax(a_board, position(i, n), depth - 1, false);
 			maxEval = max(maxEval, eval); 
 
-			a_board[i][n].item = temp;
+			a_board[i][n].item = temp; // reverses the change, for next iteration of for loop
 		}
 		return maxEval;
 	}
