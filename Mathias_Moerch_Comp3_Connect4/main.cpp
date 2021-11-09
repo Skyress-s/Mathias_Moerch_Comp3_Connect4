@@ -1,115 +1,272 @@
 #include "DECLER.h"
 #include <sstream>
-
+#include <typeindex>
 // EXTERNAL DATA -----------------------------
 
 class Player {
 public:
-	Player();
+	Player(string, int, int);
 	~Player();
 	string name{};
 	int wins{};
 	int losses{};
 
+
+	void printInfo() {
+		cout << "name    : " << name << endl;
+		cout << "wins    : " << wins << endl;
+		cout << "losses  : " << losses << endl;
+	}
 private:
 
 };
-Player::Player() {
+Player::Player(string _name, int _wins, int _losses) {
+	name = _name;
+	wins = _wins;
+	losses = _losses;
 }
 Player::~Player() {
 }
 
 
-vector<Player> LoadFromLog(string filepath) {
-	//creates a file for reading (ifstream)
-	std::ifstream file{};
-	//opens the specified text file via path
-	file.open(filepath);
+vector<Player> loadFromLog(string filepath) {
+	// MULTIPLE OBJECT ATTEMPT
+#pragma region MyRegion
 
 
-	vector<Player> players{}; // the players to return
-	string lineSeg{}; // segment of each line seperated by delimiter ":"
-	Player tempPlayer{}; // temp player to push back to players
-	int i{0};
-	vector<string> words{};
-
-	while (file.good()) {
-		std::getline(file, lineSeg, ':');
-		cout << "binguid : " << lineSeg << endl;
-	}
-	// ------------------------------------
 
 	
-	////creates a file for reading (ifstream)
-	//std::ifstream file{};
-	////opens the specified text file via path
-	//file.open(filepath);
 
+	////read!
+	//vector<Player> players{};
 
-	//string seg{}; // segment of each line seperated by delimiter ":"
-	//vector<string> words{};
-	//while (getline(file, seg, ':')) { // reading the file and making tmp string seperated by the delimiter":" and individual lines"\n"
-	//	words.push_back(seg);
-	//	
-	//}
-	//file.close(); // closes file
+	//std::ifstream file2{};
+	//file2.open(filepath);
 
+	////while (file2.good()) {
+	//	Player temp("empty", 0, 0);
 
-	//for (int i = 0; i < words.size(); i++) {
-	//	cout << "Bingus" << words[i] << endl; // WHY DOSENT THIS WORK
-	//}
-	//system("pause");
+	//	file2.read((char*)&temp, sizeof(p1));
+	//	players.push_back(temp);
+
+	////}
+
 	//
-	//vector<Player> players{}; // the players to return
-	//for (int i = 0; i < words.size(); i++) {
-	//	Player tempPlayer{}; // temp player to push back to players
-	//	tempPlayer.name = words[i];
-	//	i++;
-	//	tempPlayer.wins = stoi(words[i]);
-	//	i++;
-	//	tempPlayer.losses = stoi(words[i]);
-	//	players.push_back(tempPlayer);
+	//file2.close();
+
+	//for (int i = 0; i < players.size(); i++) {
+	//	cout << "name : " << players[i].name << " wins : " << players[i].wins << " losses : " << players[i].losses << endl;
 	//}
 
 
+	//return vector<Player*>{};
+
+
+	//single object read write ---------------
+
+	//write -------------------------------
+
+	//vector<Player*> players{};
+	//
+	//Player p1("Konas", 31230, 12114);
+
+
+	//std::ofstream file(filepath);
+	////std::ofstream file{};
+	////file.open(filepath, std::ios::app);
+
+	//file.write((char*)&p1, sizeof(p1));
+
+	//file.close();
+
+	//read --------------
+
+
+	//Player* p2 = new Player("", 0, 0);
+
+	////std::ifstream file2(filepath);
+	//std::ifstream file2;
+	//file2.open(filepath, std::ios::in);
+
+
+	//file2.read((char*)& p2, sizeof(p2));
+	////file2 >> p2;
+
+
+	//file2.close();
+	////cout << "name : " << p2.name << " wins : " << p2.wins << " losses : " << p2.losses << endl;
+	//cout << "name : " << p2->name << " wins : " << p2->wins << " losses : " << p2->losses << endl;
+
+#pragma endregion
+
+
+	std::ifstream file{};
+	file.open(filepath);
+
+	vector<string> lines{};
+
+	string line{};
+	while (file.good()) {
+		std::getline(file, line);
+		lines.push_back(line);
+	}
+
+	vector<Player> players{};
+
+	for (int i = 0; i < lines.size(); i++) {
+
+
+		int pos1 = lines[i].find(':');
+		string seg1 = lines[i].substr(0, pos1);
+		lines[i].erase(0, pos1 + 1); // adds one to also remove the ":"
+
+
+		int pos2 = lines[i].find(':');
+		string seg2 = lines[i].substr(0, pos2);
+		lines[i].erase(0, pos2 + 1); // adds one to also remove the ":"
+
+		Player temp("", 0, 0);
+		temp.name = seg1;
+		temp.wins = std::stoi(seg2);
+		temp.losses = std::stoi(lines[i]);
+
+		players.push_back(temp);
+
+	}
 	return players;
 }
 
-void WriteToLog(vector<Player> a_players, string filepath) {
-	std::ofstream file{};
-	file.open(filepath);
-	if (file.good() == false) {
-		cout << "Could not load file..." << endl;
-		system("pause");
-		return;
-	}
+void writeToLog(vector<Player> a_players, string filepath) {
+#pragma region maisam Serializing classes
+
+
+
+	////write
+	//vector<Player*> players{};
+	//players.push_back(new Player("test", 100, 0));
+	//players.push_back(new Player("Mei", 10, 123));
+	//players.push_back(new Player("Sam", 0, 0123));
+	//players.push_back(new Player("Thomas", 1130, 51));
+
+	//std::ofstream file{};
+	//file.open(filepath);
+
+	//for (int i = 0; i < players.size(); i++) {
+	//	file.write((char*)&players[i], sizeof(players[i])); // the size of needed to be updated
+
+	//}
+
+	////deletes all the excess object
+	//for (int i = 0; i < players.size(); i++) {
+	//	delete(players[i]);
+	//}
+
+	//file.close();
+#pragma endregion
+
 	
+
+	std::ofstream file{};
+	file.open(filepath, std::ios::out);
+
 	for (int i = 0; i < a_players.size(); i++) {
-		file << a_players[i].name << ":" << a_players[i].wins << ":" << a_players[i].losses << endl;
+		string stringToWrite{};
+		
+		stringToWrite += a_players[i].name + ':';
+		stringToWrite += std::to_string(a_players[i].wins) + ':';
+		stringToWrite += std::to_string(a_players[i].losses);
+
+		file << stringToWrite;
+		if (i != a_players.size() - 1) {
+
+			file << endl;
+		}
 	}
 
-	file << "TEST" << ":" << 100 << ":" << 69 << endl;
+	return;
+}
 
-	file.close();
+void options() {
+	string ans{};
+	int act = Choice({ "Return to Main Menu", "Empty space symbol" }, "Welcome to Connect 4 !!!");
+	switch (act) {
+	case 0:
+		//mainMenu();
+		break;
+
+	case 1:
+		system("cls");
+		cout << "Please enter a new Empty Space Symbol : ";
+		cin >> ans;
+		ClearCin();
+		EMPTY_PIECE = ans[0];
+		break;
+
+	case 2:
+		
+		break;
+
+	case 3:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void mainMenu() {
+	while (true) {
+
+
+		int act = Choice({"Start", "Options", "Stats","Exit" }, "Welcome to Connect 4 !!!");
+		switch (act) {
+		case 0:
+			InitGame();
+			break;
+
+		case 1:
+			options();
+			break;
+
+		case 2:
+			break;
+
+		case 3:
+			break;
+
+		default:
+			break;
+		}
+	}
+
 }
 
 
 int main() {
 
-	//vector<Player> players = LoadFromLog("Players.txt");
-	//
-	////WriteToLog(players, "Players.txt");
+	/*vector<Player> players{};
+	players.push_back(Player("test", 100, 0));
+	players.push_back(Player("Mei", 10, 123));
+	players.push_back(Player("Sam", 0, 0123));
+	players.push_back(Player("Thomas", 1130, 51));
+	WriteToLog(players, playersFile);
+
+	vector<Player> players2 = LoadFromLog("Players.txt");
+	for (int i = 0; i < players2.size(); i++) {
+		players2[i].printInfo();
+	}*/
+
+	//LoadFromLog("Players.txt");
 
 	//for (int i = 0; i < players.size(); i++) {
-	//	cout << players[i].name << endl;
-	//	cout << players[i].wins << endl;
-	//	cout << players[i].losses << endl;
-	//	cout << endl;
+	//	cout << "name : " << players[i]->name << " wins : " << players[i]->wins << " losses : " << players[i]->losses << endl;
 	//}
+	
 
 	//return 0;
 
-	InitGame();
+
+	mainMenu();
 
 
 	return 0;
@@ -121,8 +278,7 @@ void ClearCin() {
 	std::cin.ignore(32767, '\n');    //clears the buffer if anything is there
 }
 
-
-// AI / --------------------------------------
+// AI --------------------------------------
 
 /// <summary>
 /// for the score i used some of the scruture from this connect four alg https://github.com/KeithGalli/Connect4-Python/blob/503c0b4807001e7ea43a039cb234a4e55c4b226c/connect4_with_ai.py#L85
@@ -154,7 +310,6 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 		}
 		else {
 			return vector<int>{ scoreOfBoard(a_board, p2), pos.x};
-
 		}
 	}
 
@@ -341,7 +496,7 @@ int Choice(vector<string> options, string title) {
 }
 
 void InitGame() {
-	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{ '*', false }));
+	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{ EMPTY_PIECE, false }));
 
 	activePlayer = 'X';
 
@@ -383,7 +538,7 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 			dropPoint = playerChooseSlot(a_board, a_activeAI);
 			if (!isDropPointValid(a_board, dropPoint)) {
 				cout << "Invalid placement, please choose again";
-				addDotsToConsole(3, 500.f);
+				addDotsToConsole(3, 200.f);
 				continue;
 			}
 		}
@@ -431,13 +586,11 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 	}
 
 	//play again ? 
-	int ch = Choice({ "Yes", "no" }, "Do you want to play again?");
-	if (ch == 0) {
-		InitGame();
+	int ch = Choice({ "Yes", "no" }, "Return to Main Menu?");
+	if (ch == 1) {
+		exit(0);
 	}
-	else {
-
-	}
+	
 
 }
 
@@ -468,7 +621,7 @@ int scoreOfBoard(vector<vector<Tile>> a_board, char player) { // for the score i
 bool isBoardFull(vector<vector<Tile>> a_board) {
 	for (int i = 0; i < a_board.size(); i++) {
 		for (int j = 0; j < a_board[0].size(); j++) {
-			if (a_board[i][j].item == '*') {
+			if (a_board[i][j].item == EMPTY_PIECE) {
 				return false;
 			}
 		}
@@ -496,7 +649,7 @@ int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
 			return 0;
 		}
 
-		if (a_board[a_dp][currentHeight - 1].item != '*') {
+		if (a_board[a_dp][currentHeight - 1].item != EMPTY_PIECE) {
 			return currentHeight;
 		}
 
@@ -532,7 +685,7 @@ bool isOutOfRange(Position pos, vector<vector<Tile>> a_board) {
 	else if (pos.y > a_board[0].size()-1 || pos.y < 0) {
 		return true;
 	}
-	else if (a_board[pos.x][pos.y].item == '*') {
+	else if (a_board[pos.x][pos.y].item == EMPTY_PIECE) {
 		return true;
 	}
 	return false;
@@ -541,7 +694,7 @@ bool isOutOfRange(Position pos, vector<vector<Tile>> a_board) {
 bool isDropPointValid(vector<vector<Tile>> a_board, int a_dropPoint) {
 	int maxHeight = a_board[0].size();
 	char potentialBlockedPos = a_board[a_dropPoint][maxHeight - 1].item;
-	if (potentialBlockedPos == '*') {
+	if (potentialBlockedPos == EMPTY_PIECE) {
 		return true;
 		system("pause");
 	}
@@ -549,7 +702,6 @@ bool isDropPointValid(vector<vector<Tile>> a_board, int a_dropPoint) {
 		return false;
 	}
 }
-
 
 // VISUAL ----------------------------------
 void addDotsToConsole(int dots, float duration) {
@@ -572,7 +724,7 @@ void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration) {
 	while (currentHeight > pos.y) {
 		a_board[pos.x][currentHeight].item = activePlayer;
 		if (currentHeight < a_board[0].size() - 1) {
-			a_board[pos.x][currentHeight + 1].item = '*';
+			a_board[pos.x][currentHeight + 1].item = EMPTY_PIECE;
 		}
 		
 		system("cls");

@@ -21,14 +21,16 @@ using std::string;
 
 char activePlayer{};
 
-char const p1 = 'X';
+char  p1 = 'X';
 string p1Name{ "PLAYER ONE" };
 
-char const p2 = 'O';
+char  p2 = 'O';
 string p2Name{ "PLAYER TWO" };
 
-#define EMPTY_PIECE '*'
+char EMPTY_PIECE = '*';
 int turn{};
+
+const string playersFile = "Players.txt";
 
 /// <summary>
 /// function for clearing the cin buffer for errors and emptying it of left over data
@@ -37,6 +39,7 @@ int turn{};
 void ClearCin();
 
 
+void mainMenu();
 
 
 

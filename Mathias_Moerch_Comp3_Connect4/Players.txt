@@ -1,4 +1,4 @@
-Mats:1:4
-J:5:1
-HANS:1:100
-JESPER:14:50
+test:100:0
+Mei:10:123
+Sam:0:83
+Thomas:1130:51
