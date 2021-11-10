@@ -67,6 +67,8 @@ int evalRowOfFour(vector<int> row, char player);
 /// <param name="title"></param>
 /// <returns> the index of the answer chosen </returns>
 int Choice(vector<string> options, string title);
+int colorChoice( std::pair<string, int> title);
+
 
 void InitGame();
 

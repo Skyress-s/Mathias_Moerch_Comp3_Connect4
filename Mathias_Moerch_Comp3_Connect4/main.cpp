@@ -37,8 +37,8 @@ void addColor(int col) {
 }
 
 
-Player playerOne( "", 0, 0, 3, 'X' );
-Player playerTwo( "", 0, 0, 4, 'O' ); 
+Player playerOne( "PlayerONE", 0, 0, 3, 'X' );
+Player playerTwo( "PLAYER TWO", 0, 0, 4, 'O' ); 
 
 vector<Player> loadFromLog(string filepath) {
 	// MULTIPLE OBJECT ATTEMPT
@@ -109,10 +109,20 @@ vector<Player> loadFromLog(string filepath) {
 	//cout << "name : " << p2->name << " wins : " << p2->wins << " losses : " << p2->losses << endl;
 
 #pragma endregion
-
+	//checks if the file is empty
+	if (true) {
+		std::ifstream file{};
+		file.open(filepath);
+		
+	}
 
 	std::ifstream file{};
 	file.open(filepath);
+
+	if (file.peek() == std::ifstream::traits_type::eof()) { // this little snippet for checking if the file is empty is from https://kodlogs.com/blog/14054/c-check-if-file-is-empty
+		return vector<Player>{};
+	}
+
 
 	vector<string> lines{};
 
@@ -220,6 +230,7 @@ void AddOrModifyPlayer(/*vector<Player> &a_players,*/ string filepath, Player a_
 	//loads the players
 	vector<Player> a_players = loadFromLog(filepath);
 
+	
 
 	for (int i = 0; i < a_players.size(); i++) {
 		if (a_players[i].name == a_newP.name) {
@@ -234,6 +245,11 @@ void AddOrModifyPlayer(/*vector<Player> &a_players,*/ string filepath, Player a_
 		}
 	}
 
+	//edge case if the file is empty
+	if (a_players.size() == 0) {
+		a_players.push_back(a_newP);
+	}
+
 
 	//saves them agian
 	writeToLog(a_players, filepath);
@@ -245,7 +261,8 @@ void setPlayerColor() {
 
 void options() {
 	string ans{};
-	int act = Choice({ "Return to Main Menu", "Empty space symbol" }, "Welcome to Connect 4 !!!");
+	
+	int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color"}, "Options");
 	switch (act) {
 	case 0:
 		//mainMenu();
@@ -260,10 +277,12 @@ void options() {
 		break;
 
 	case 2:
-		
+		playerOne.color = colorChoice({ playerOne.name, 0});
+
 		break;
 
 	case 3:
+		playerOne.color = colorChoice({ playerTwo.name, 0 });
 		break;
 
 	default:
@@ -274,8 +293,8 @@ void options() {
 void mainMenu() {
 	while (true) {
 
-
-		int act = Choice({"Start", "Options", "Stats","Exit" }, "Welcome to Connect 4 !!!");
+		//vector<std::pair<string, int>> choices = { {"Start", 0}, {"Options", 0}, {"Stats", 0}, {"Exit", 0} };
+		int act = Choice({"Start", "Options", "Stats", "Exit"}, "Welcome to Connect 4 !!!");
 		switch (act) {
 		case 0:
 			InitGame();
@@ -325,7 +344,6 @@ int main() {
 
 	//return 0;
 
-
 	mainMenu();
 
 
@@ -356,19 +374,20 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, int a
 	if (depth == 0 || score >= 4) {
 		if (score >= 4 && maximizing == true) {
 			/*drawBoard(a_board);
-			cout << "WIN!" << endl;
+			cout << "LOSS!" << endl;
 			system("pause");*/
 			return  vector<int>{-1000, pos.x};
 		}
 		else if (score >= 4 && maximizing == false) {
+			
 			/*drawBoard(a_board);
-			cout << "LOSS!" << endl;
+			cout << "AI WON!" << endl;
 			system("pause");*/
 			return  vector<int>{1000, pos.x};
 		}
 		else {
-			//return vector<int>{ scoreOfBoard(a_board, playerTwo.symbol), pos.x};
-			return {0, pos.x};
+			return vector<int>{ scoreOfBoard(a_board, playerTwo.symbol), pos.x};
+			//return {0, pos.x};
 		}
 	}
 
@@ -387,19 +406,21 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, int a
 			a_board[i][n].item = playerTwo.symbol; // the new gamestate
 
 			int eval = minimax(a_board, Position(i, n), depth - 1, alpha, beta, false)[0];
+			a_board[i][n].item = temp; // reverses the change, for next iteration of for loop
+
 			if (maxEval < eval) {
 				path = i;
 			}
+			//eval
+			maxEval = max(maxEval, eval); 
+
 			//pruning
 			alpha = max(alpha, eval);
 			if (beta <= alpha) {
 				break;
 			}
 
-			//eval
-			maxEval = max(maxEval, eval); 
 
-			a_board[i][n].item = temp; // reverses the change, for next iteration of for loop
 		}
 		return vector<int>{maxEval, path}/*maxEval*/;
 	}
@@ -417,19 +438,22 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, int a
 			a_board[i][n].item = playerOne.symbol; // the new gamestate
 			
 			int eval = minimax(a_board, Position(i, n), depth - 1, alpha, beta, true)[0];
+			a_board[i][n].item = temp;
+
 			if (maxEval > eval) {
 				path = i;
 			}
+			//eval
+			maxEval = min(maxEval, eval);
+
+
 			//pruning
 			beta = min(beta, eval);
 			if (beta <= alpha) {
 				break;
 			}
 
-			//eval
-			maxEval = min(maxEval, eval);
 
-			a_board[i][n].item = temp;
 		}
 		return vector<int>{maxEval, path}/*maxEval*/;
 	}
@@ -528,16 +552,76 @@ int Choice(vector<string> options, string title) {
 	bool accAns{};
 	while (!accAns) {
 		system("cls");
+		//addColor(title.second);
 		cout << title << endl << endl;
 		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
 			if (currentChoice == i) {
-				addColor(2);
 				cout << " ->   ";
 			}
 			else {
 				cout << "    ";
 			}
 			cout << options[i] << endl;
+			cout << termcolor::reset;
+		}
+
+		char input = _getch();
+		switch (tolower(input)) {
+		case 'w': // if by pressing w, you go under 0, reset to top of array
+			if (currentChoice - 1 < 0) {
+				currentChoice = options.size() - 1;
+				break;
+			}
+			currentChoice += -1;
+			break;
+
+		case 's':// if by pressing s, you go over options size, reset to bottom of array
+			if (currentChoice + 1 >= options.size()) {
+				currentChoice = 0;
+				break;
+			}
+			currentChoice += 1;
+			break;
+
+		case ' ':
+			accAns = true;
+			break;
+
+		default:
+			break;
+		}
+	}
+	return currentChoice;
+}
+
+int colorChoice( std::pair<string, int> title) {
+	vector<std::pair<string, int>> options{
+		{"Red", 0},
+		{"Green", 1},
+		{"Blue", 2},
+		{"Bright Red", 3},
+		{"Bright Green", 4},
+		{"Bright Blue", 5}
+	};
+
+	//defines current choice, this will be used as the return value and to determine where to draw the arrow
+	int currentChoice{};
+	bool accAns{};
+	while (!accAns) {
+		system("cls");
+
+		//title color
+		addColor(currentChoice);
+		cout << "   " << title.first << endl << endl << termcolor::reset;
+		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
+			if (currentChoice == i) {
+				addColor(options[i].second);
+				cout << " ->   ";
+			}
+			else {
+				cout << "    ";
+			}
+			cout << options[i].first << endl;
 			cout << termcolor::reset;
 		}
 
@@ -589,9 +673,10 @@ void InitGame() {
 void inputNames(bool _activeAI) {
 	system("cls");
 	cout << "Please input player one name : ";
-	addColor(1);
+	addColor(playerOne.color);
 	string name{};
 	std::getline(cin, name);
+	cout << termcolor::reset;
 	playerOne.name = name;
 
 
@@ -599,9 +684,10 @@ void inputNames(bool _activeAI) {
 	system("cls");
 	if (!_activeAI) {
 		cout << "Please input player two name : ";
+		addColor(playerTwo.color);
 		std::getline(cin, name);
 		playerTwo.name = name;
-		cout << endl;
+		cout << endl << termcolor::reset;
 	}
 	else {
 		playerTwo.name = "AI";
@@ -888,13 +974,14 @@ void drawBoard(vector<vector<Tile>> a_board) {
 		for (int j = 0; j < a_board.size(); j++) {
 			Tile tile = a_board[j][a_board[0].size() - i - 1];
 			if (tile.winnerTile) {
+				
 				cout << termcolor::magenta;
 			}
 			else if (tile.item == playerOne.symbol) {
-				cout << termcolor::bright_cyan;
+				addColor(playerOne.color);
 			}
 			else if (tile.item == playerTwo.symbol) {
-				cout << termcolor::bright_red;
+				addColor(playerTwo.color);
 			}
 			
 			cout << a_board[j][a_board[0].size() - i - 1].item;
@@ -916,12 +1003,14 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 		system("cls");
 		//displays the active player
 		if (activePlayer == playerOne.symbol) {
+			addColor(playerOne.color);
 			cout << playerOne.name;
 		}
 		else {
+			addColor(playerTwo.color);
 			cout << playerTwo.name;
 		}
-		cout << "'s turn!";
+		cout << "'s turn!" << termcolor::reset;
 		if (a_activeAI && activePlayer == playerTwo.symbol) {
 			cout << "  (AI)";
 		}
@@ -936,10 +1025,10 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 			if (i == currentChoice) {
 				content = activePlayer;
 				if (activePlayer == playerOne.symbol) {
-					cout << termcolor::bright_cyan;
+					addColor(playerOne.color);
 				}
 				else if (activePlayer == playerTwo.symbol) {
-					cout << termcolor::bright_red;
+					addColor(playerTwo.color);
 				}
 			}
 			cout << '[' << content << ']';
