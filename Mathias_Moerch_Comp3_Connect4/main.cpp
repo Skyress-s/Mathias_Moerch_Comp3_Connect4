@@ -1,7 +1,10 @@
 #include "DECLER.h"
 #include <sstream>
 #include <typeindex>
+#include <mutex>
 // EXTERNAL DATA -----------------------------
+std::mutex mtx;
+
 
 class Player {
 public:
@@ -291,10 +294,8 @@ void ClearCin() {
 /// <returns>return vector<int>(2), 0 is score, 1 is path</returns>
 vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool maximizing) { // first is score, second is path
 
-	/*drawBoard(a_board);
-	system("pause");*/
-
 	int score = scoreOfTile(pos, a_board).size();
+	//int score = 1;
 	if (depth == 0 || score >= 4) {
 		if (score >= 4 && maximizing == true) {
 			/*drawBoard(a_board);
@@ -309,7 +310,8 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 			return  vector<int>{1000, pos.x};
 		}
 		else {
-			return vector<int>{ scoreOfBoard(a_board, p2), pos.x};
+			//return vector<int>{ scoreOfBoard(a_board, p2), pos.x};
+			return {0, pos.x};
 		}
 	}
 
@@ -529,10 +531,21 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		system("cls");
 		int dropPoint{};
 		if (activePlayer == p2 && a_activeAI) {
-			vector<int>arr = minimax(a_board, Position(0, 0), 4, true);
-			/*cout << "Score : " << arr[0] << "   Path : " << arr[1] << endl;
-			system("pause");*/
-			dropPoint = arr[1];
+			//old method
+			/*vector<int>arr = minimax(a_board, Position(0, 0), 5, true);
+			dropPoint = arr[1];*/
+
+			//new method
+			/*vector<vector<int>> paths{};
+
+			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
+			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
+			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
+			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
+			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
+			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
+			std::thread p1(minimax, a_board, Position(0, 0), 4, false);*/
+
 		}
 		else {
 			dropPoint = playerChooseSlot(a_board, a_activeAI);
