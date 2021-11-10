@@ -26,8 +26,8 @@ int globalDP{ 3 };
 int turn{};
 
 char EMPTY_PIECE = '*';
-char activePlayer{};
-
+//char activePlayer{};
+Player* activePlayer{};
 const string playersFile = "Players.txt";
 
 
@@ -70,7 +70,7 @@ int Choice(vector<string> options, string title);
 int colorChoice( std::pair<string, int> title);
 
 
-void InitGame();
+void InitGame(bool);
 
 void inputName(Player& a_player);
 

@@ -275,8 +275,8 @@ void options() {
 	bool finished{ false };
 	while (!finished) {
 		string ans{};
-		int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color", "Change P1 : " + playerOne.name + " Name",
-			"Change P2 : " + playerTwo.name + " Name"}, "Options");
+		int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color", "Change P1 : " + playerOne.name,
+			"Change P2 : " + playerTwo.name}, "Options");
 		switch (act) {
 		case 0:
 			finished = true;
@@ -318,21 +318,25 @@ void mainMenu() {
 	while (!finished) {
 
 		//vector<std::pair<string, int>> choices = { {"Start", 0}, {"Options", 0}, {"Stats", 0}, {"Exit", 0} };
-		int act = Choice({"Start", "Options", "Stats", "Exit"}, "Welcome to Connect 4 !!!");
+		int act = Choice({"Play Duos", "Player Against AI", "Options", "Stats", "Exit"}, "Welcome to Connect 4 !!!");
 		switch (act) {
 		case 0:
-			InitGame();
+			InitGame(false);
 			break;
 
 		case 1:
-			options();
+			InitGame(true);
 			break;
 
 		case 2:
-			stats();
+			options();
 			break;
 
 		case 3:
+			stats();
+			break;
+
+		case 4:
 			finished = true;
 			break;
 
@@ -342,9 +346,6 @@ void mainMenu() {
 	}
 
 }
-
-
-
 
 
 
@@ -700,20 +701,10 @@ int colorChoice( std::pair<string, int> title) {
 	return currentChoice;
 }
 
-void InitGame() {
+void InitGame(bool activeAI) {
 	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{ EMPTY_PIECE, false }));
 	srand(time(0));
-
-	int AiAns = Choice({ "yes", "no" }, "Do You want to play agenst a AI? (AI is always second player)");
-	bool activeAI{ false };
-	if (AiAns == 0) {
-		activeAI = true;
-		playerTwo.name = "AI";
-	}
-	else
-		activeAI = false;
-
-	//inputName(activeAI, );
+	activePlayer = &playerOne;
 	mainGameloop(board, activeAI);
 }
 
@@ -741,16 +732,13 @@ void inputName(Player& a_player) {
 	}*/
 }
 
-
-
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 	bool finishedGame{ false };
-	activePlayer = playerOne.symbol;
 	while (!finishedGame) {
 		turn++;
 		system("cls");
 		int dropPoint{};
-		if (activePlayer == playerTwo.symbol && a_activeAI) {
+		if (activePlayer->symbol == playerTwo.symbol && a_activeAI) {
 			//some flavor to show the AI is thinking
 			system("cls");
 			addColor(playerTwo.color);
@@ -822,7 +810,7 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		//int h = animateFall(a_board, dropPoint);
 		int h = calcFallPos(a_board, dropPoint);
 		animateFall(a_board, Position(dropPoint, h), 20);
-		a_board[dropPoint][h].item = activePlayer;
+		a_board[dropPoint][h].item = activePlayer->symbol;
 
 		vector<Position> score = scoreOfTile(Position(dropPoint, h), a_board);
 		cout << score.size() << endl;
@@ -833,7 +821,7 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 			assignWinnerTilesBoard(a_board, score);
 
 			string winningPlayer{};
-			if (activePlayer == playerOne.symbol)
+			if (activePlayer->symbol == playerOne.symbol)
 				winningPlayer = playerOne.name;
 			else
 				winningPlayer = playerTwo.name;
@@ -841,7 +829,8 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 
 			system("cls");
 			drawBoard(a_board);
-			cout << winningPlayer << " has won!" << endl;
+			addColor(activePlayer->color);
+			cout << "   " <<activePlayer->name << termcolor::reset << " was victorius !!!" << endl << endl;
 			system("pause");
 			finishedGame = true;
 		}
@@ -849,20 +838,20 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		if (isBoardFull(a_board)) {
 			system("cls");
 			drawBoard(a_board);
-			cout << "Board is " << termcolor::bright_blue << "FULL. Its a draw" << termcolor::reset << endl;
+			cout << "   Board is " << termcolor::bright_blue << "FULL. Its a draw" << termcolor::reset << endl;
 			system("pause");
 			finishedGame = true;
 		}
 
 
-		scoreOfBoard(a_board, activePlayer);
+		scoreOfBoard(a_board, activePlayer->symbol);
 		toggleActivePlayer();
 	}
 
 
 	//update the players.txt file
 	int add = 1;
-	if (activePlayer == playerTwo.symbol) {
+	if (activePlayer->symbol == playerTwo.symbol) {
 		playerOne.wins = 1;
 		playerTwo.losses = 1;
 	}
@@ -924,11 +913,11 @@ bool isBoardFull(vector<vector<Tile>> a_board) {
 /// toggles what player is the active player
 /// </summary>
 void toggleActivePlayer() {
-	if (activePlayer == playerOne.symbol) {
-		activePlayer = playerTwo.symbol;
+	if (activePlayer->symbol == playerOne.symbol) {
+		activePlayer = &playerTwo;
 	}
 	else {
-		activePlayer = playerOne.symbol;
+		activePlayer = &playerOne;
 	}
 }
 
@@ -1013,7 +1002,7 @@ void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration) {
 	int currentHeight = a_board[0].size() - 1;
 
 	while (currentHeight > pos.y) {
-		a_board[pos.x][currentHeight].item = activePlayer;
+		a_board[pos.x][currentHeight].item = activePlayer->symbol;
 		if (currentHeight < a_board[0].size() - 1) {
 			a_board[pos.x][currentHeight + 1].item = EMPTY_PIECE;
 		}
@@ -1063,7 +1052,7 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 	while (!finished) {
 		system("cls");
 		//displays the active player
-		if (activePlayer == playerOne.symbol) {
+		if (activePlayer->symbol == playerOne.symbol) {
 			addColor(playerOne.color);
 			cout << playerOne.name;
 		}
@@ -1072,7 +1061,7 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 			cout << playerTwo.name;
 		}
 		cout << "'s turn!" << termcolor::reset;
-		if (a_activeAI && activePlayer == playerTwo.symbol) {
+		if (a_activeAI && activePlayer->symbol == playerTwo.symbol) {
 			cout << "  (AI)";
 		}
 			
@@ -1084,11 +1073,11 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 		for (int i = 0; i < a_board.size(); i++) {
 			char content{ ' ' };
 			if (i == globalDP) {
-				content = activePlayer;
-				if (activePlayer == playerOne.symbol) {
+				content = activePlayer->symbol;
+				if (content == playerOne.symbol) {
 					addColor(playerOne.color);
 				}
-				else if (activePlayer == playerTwo.symbol) {
+				else if (content == playerTwo.symbol) {
 					addColor(playerTwo.color);
 				}
 			}
@@ -1149,5 +1138,10 @@ void assignWinnerTilesBoard(vector<vector<Tile>> &a_board, vector<Position> pose
 		a_board[ poses[i].x ][ poses[i].y ].winnerTile = true;
 	}
 }
+
+void changePlayerSymbol(Player a_player) {
+
+}
+/////////////// TODO
 
 
