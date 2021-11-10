@@ -2,33 +2,38 @@
 #include <sstream>
 #include <typeindex>
 #include <mutex>
+#include <omp.h>
+#include "Player.h"
 // EXTERNAL DATA -----------------------------
 std::mutex mtx;
+void addColor(int col) {
+	switch (col) {
+	case 0:
+		cout << termcolor::red;
+		break;
 
+	case 1:
+		cout << termcolor::green;
+		break;
 
-class Player {
-public:
-	Player(string, int, int);
-	~Player();
-	string name{};
-	int wins{};
-	int losses{};
+	case 2:
+		cout << termcolor::blue;
+		break;
 
+	case 3:
+		cout << termcolor::bright_red;
+		break;
 
-	void printInfo() {
-		cout << "name    : " << name << endl;
-		cout << "wins    : " << wins << endl;
-		cout << "losses  : " << losses << endl;
+	case 4:
+		cout << termcolor::bright_green;
+		break;
+	case 5:
+		cout << termcolor::bright_blue;
+		break;
+
+	default:
+		break;
 	}
-private:
-
-};
-Player::Player(string _name, int _wins, int _losses) {
-	name = _name;
-	wins = _wins;
-	losses = _losses;
-}
-Player::~Player() {
 }
 
 
@@ -128,7 +133,7 @@ vector<Player> loadFromLog(string filepath) {
 		string seg2 = lines[i].substr(0, pos2);
 		lines[i].erase(0, pos2 + 1); // adds one to also remove the ":"
 
-		Player temp("", 0, 0);
+		Player temp("", 0, 0, 0, ' ');
 		temp.name = seg1;
 		temp.wins = std::stoi(seg2);
 		temp.losses = std::stoi(lines[i]);
@@ -137,6 +142,25 @@ vector<Player> loadFromLog(string filepath) {
 
 	}
 	return players;
+}
+
+void stats() {
+	system("cls");
+	// adds the color
+	addColor(4);
+	cout << " ->  Return to Meny" << endl << endl << termcolor::reset;
+
+	vector<Player> players = loadFromLog(playersFile);
+
+	for (size_t i = 0; i < players.size(); i++) {
+		cout << "    Player : " << players[i].name << endl;
+		cout << "    Wins   : " << players[i].wins << endl;
+		cout << "    losses : " << players[i].losses << endl;
+		cout << endl;
+	}
+
+	system("pause>0");
+
 }
 
 void writeToLog(vector<Player> a_players, string filepath) {
@@ -189,6 +213,29 @@ void writeToLog(vector<Player> a_players, string filepath) {
 	return;
 }
 
+void AddOrModifyPlayer(/*vector<Player> &a_players,*/ string filepath, Player a_newP) {
+	//loads the players
+	vector<Player> a_players = loadFromLog(filepath);
+
+
+	for (int i = 0; i < a_players.size(); i++) {
+		if (a_players[i].name == a_newP.name) {
+			a_players[i].wins += a_newP.wins;
+			a_players[i].losses += a_newP.losses;
+			break;
+		}
+
+		if (i == a_players.size() - 1) {
+			a_players.push_back(a_newP);
+			break;
+		}
+	}
+
+
+	//saves them agian
+	writeToLog(a_players, filepath);
+}
+
 void options() {
 	string ans{};
 	int act = Choice({ "Return to Main Menu", "Empty space symbol" }, "Welcome to Connect 4 !!!");
@@ -232,6 +279,7 @@ void mainMenu() {
 			break;
 
 		case 2:
+			stats();
 			break;
 
 		case 3:
@@ -243,6 +291,8 @@ void mainMenu() {
 	}
 
 }
+
+
 
 
 int main() {
@@ -310,8 +360,8 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 			return  vector<int>{1000, pos.x};
 		}
 		else {
-			//return vector<int>{ scoreOfBoard(a_board, p2), pos.x};
-			return {0, pos.x};
+			return vector<int>{ scoreOfBoard(a_board, p2), pos.x};
+			//return {0, pos.x};
 		}
 	}
 
@@ -460,12 +510,14 @@ int Choice(vector<string> options, string title) {
 		cout << title << endl << endl;
 		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
 			if (currentChoice == i) {
+				addColor(2);
 				cout << " ->   ";
 			}
 			else {
 				cout << "    ";
 			}
 			cout << options[i] << endl;
+			cout << termcolor::reset;
 		}
 
 		char input = _getch();
@@ -509,18 +561,25 @@ void InitGame() {
 	else
 		activeAI = false;
 
-	inputNames();
+	inputNames(activeAI);
 	mainGameloop(board, activeAI);
 }
 
-void inputNames() {
+void inputNames(bool _activeAI) {
+	system("cls");
 	cout << "Please input player one name : ";
+	addColor(1);
 	std::getline(cin, p1Name);
 	cout << endl;
-
-	cout << "Please input player two name : ";
-	std::getline(cin, p2Name);
-	cout << endl;
+	system("cls");
+	if (!_activeAI) {
+		cout << "Please input player two name : ";
+		std::getline(cin, p2Name);
+		cout << endl;
+	}
+	else {
+		p2Name = "AI";
+	}
 }
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
@@ -532,8 +591,37 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		int dropPoint{};
 		if (activePlayer == p2 && a_activeAI) {
 			//old method
-			/*vector<int>arr = minimax(a_board, Position(0, 0), 5, true);
-			dropPoint = arr[1];*/
+			vector<int>arr = minimax(a_board, Position(0, 0), 4, true);
+			dropPoint = arr[1];
+
+#pragma region MyRegion
+
+
+
+			//vector<vector<vector<Tile>>> threadBoards{}; // creates different board for each possible move and then adds them to a thread
+			//for (int i = 0; i < a_board.size(); i++) {
+			//	if (isDropPointValid(a_board, i) == false) // if it isnt a valid droppoint, do not make a instance for it
+			//		continue;
+			//	threadBoards.push_back(a_board);
+
+			//	int y = calcFallPos(a_board, i);
+			//	threadBoards[i][i][y].item = p2;
+
+			//}
+			//double start{ omp_get_wtime() };
+			//vector<std::thread> threads{};
+			//for (int i = 0; i < threadBoards.size(); i++) {
+			//	threads.push_back(std::thread(minimax, threadBoards[i], Position(0, 0), 3, false));
+			//}
+
+			//for (int i = 0; i < threads.size(); i++) {
+			//	threads[i].join();
+			//}
+			//cout << " Time: " << omp_get_wtime() - start << endl;
+
+			//cout << "finsihed!" << endl;
+			//system("pause");
+
 
 			//new method
 			/*vector<vector<int>> paths{};
@@ -545,6 +633,8 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
 			std::thread p1(minimax, a_board, Position(0, 0), 4, false);
 			std::thread p1(minimax, a_board, Position(0, 0), 4, false);*/
+
+#pragma endregion
 
 		}
 		else {
@@ -597,6 +687,17 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		scoreOfBoard(a_board, activePlayer);
 		toggleActivePlayer();
 	}
+
+	//update the players.txt file
+	if (activePlayer == p2) { // have to compansate for the last run of toggle active player
+		AddOrModifyPlayer(playersFile, Player(p1Name, 1, 0, 0, 'X'));
+		AddOrModifyPlayer(playersFile, Player(p2Name, 0, 1, 0, 'O'));
+	}
+	else {
+		AddOrModifyPlayer(playersFile, Player(p1Name, 0, 1, 0, 'X'));
+		AddOrModifyPlayer(playersFile, Player(p2Name, 1, 0, 0, 'O'));
+	}
+
 
 	//play again ? 
 	int ch = Choice({ "Yes", "no" }, "Return to Main Menu?");

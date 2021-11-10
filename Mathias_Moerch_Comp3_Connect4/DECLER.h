@@ -21,11 +21,15 @@ using std::string;
 
 char activePlayer{};
 
-char  p1 = 'X';
-string p1Name{ "PLAYER ONE" };
+Player playerOne{"", 0, 0, 3, 'X'};
+Player playerOne{"", 0, 0, 4, 'O' };
 
-char  p2 = 'O';
-string p2Name{ "PLAYER TWO" };
+//char  p1 = 'X';
+//string p1Name{ "PLAYER ONE" };
+
+
+//char  p2 = 'O';
+//string p2Name{ "PLAYER TWO" };
 
 char EMPTY_PIECE = '*';
 int turn{};
@@ -67,7 +71,7 @@ int Choice(vector<string> options, string title);
 
 void InitGame();
 
-void inputNames();
+void inputNames(bool);
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI);
 
