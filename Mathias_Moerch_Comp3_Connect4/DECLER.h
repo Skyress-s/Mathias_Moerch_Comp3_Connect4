@@ -8,7 +8,9 @@
 #include <string>
 #include <cwchar>
 #include <Windows.h>
+#include <mutex>
 
+#include "Player.h"
 #include "termcolor.hpp"
 #include "Position.h"
 #include "Tile.h"
@@ -19,23 +21,17 @@ using std::endl;
 using std::vector;
 using std::string;
 
-char activePlayer{};
 
 int globalDP{ 3 };
-
-
-
-//char  p1 = 'X';
-//string p1Name{ "PLAYER ONE" };
-
-
-//char  p2 = 'O';
-//string p2Name{ "PLAYER TWO" };
-
-char EMPTY_PIECE = '*';
 int turn{};
 
+char EMPTY_PIECE = '*';
+char activePlayer{};
+
 const string playersFile = "Players.txt";
+
+
+
 
 /// <summary>
 /// function for clearing the cin buffer for errors and emptying it of left over data
@@ -49,6 +45,8 @@ void mainMenu();
 
 
 // AI --------------------------------------
+
+void AnimateAIDecition(std::vector<std::vector<Tile>>& a_board, int dropPoint);
 
 vector<int> minimax(vector<vector<Tile>> a_board, Position pos,  int depth, int alpha, int beta, bool maximizing);
 
@@ -74,7 +72,9 @@ int colorChoice( std::pair<string, int> title);
 
 void InitGame();
 
-void inputName(bool);
+void inputName(Player& a_player);
+
+void AnimateAIDecition(std::vector<std::vector<Tile>>& a_board, int dropPoint);
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI);
 

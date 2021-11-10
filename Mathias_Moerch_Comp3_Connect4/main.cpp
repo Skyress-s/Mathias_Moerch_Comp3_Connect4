@@ -1,10 +1,5 @@
 #include "DECLER.h"
-#include <sstream>
-#include <typeindex>
-#include <mutex>
-#include <omp.h>
-#include "Player.h"
-// EXTERNAL DATA -----------------------------
+
 std::mutex mtx;
 void addColor(int col) {
 	switch (col) {
@@ -37,8 +32,10 @@ void addColor(int col) {
 }
 
 
-Player playerOne( "PlayerONE", 0, 0, 3, 'X' );
+Player playerOne( "Player ONE", 0, 0, 3, 'X' );
 Player playerTwo( "PLAYER TWO", 0, 0, 5, 'O' ); 
+
+// EXTERNAL DATA -----------------------------
 
 vector<Player> loadFromLog(string filepath) {
 	// MULTIPLE OBJECT ATTEMPT
@@ -164,7 +161,6 @@ vector<Player> loadFromLog(string filepath) {
 	return players;
 }
 
-
 void writeToLog(vector<Player> a_players, string filepath) {
 #pragma region maisam Serializing classes
 
@@ -216,26 +212,6 @@ void writeToLog(vector<Player> a_players, string filepath) {
 	return;
 }
 
-void stats() {
-	system("cls");
-	// adds the color
-	addColor(4);
-	cout << " ->  Return to Meny" << endl << endl << termcolor::reset;
-
-	vector<Player> players = loadFromLog(playersFile);
-
-	for (size_t i = 0; i < players.size(); i++) {
-		addColor(players[i].color);
-		cout << "    Player : " << players[i].name << endl;
-		cout << "    Wins   : " << players[i].wins << endl;
-		cout << "    losses : " << players[i].losses << endl;
-		cout << endl << termcolor::reset;
-	}
-
-	system("pause");
-
-}
-
 void AddOrModifyPlayer(string filepath, Player a_newP) {
 	//loads the players
 	vector<Player> a_players = loadFromLog(filepath);
@@ -266,6 +242,31 @@ void AddOrModifyPlayer(string filepath, Player a_newP) {
 	writeToLog(a_players, filepath);
 }
 
+// MENUS --------------------------
+
+void stats() {
+	system("cls");
+	// adds the color
+	
+
+	vector<Player> players = loadFromLog(playersFile);
+	
+	cout << termcolor::bright_blue << "  Stats" << endl << endl;
+	for (size_t i = 0; i < players.size(); i++) {
+		addColor(players[i].color);
+		cout << "    Player : " << players[i].name << endl;
+		cout << "    Wins   : " << players[i].wins << endl;
+		cout << "    losses : " << players[i].losses << endl;
+		cout << endl << termcolor::reset;
+	}
+
+	addColor(4);
+	cout << " ->  Return to Meny" << endl << endl << termcolor::reset;
+
+	system("pause");
+
+}
+
 void setPlayerColor() {
 
 }
@@ -274,7 +275,8 @@ void options() {
 	bool finished{ false };
 	while (!finished) {
 		string ans{};
-		int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color"}, "Options");
+		int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color", "Change P1 : " + playerOne.name + " Name",
+			"Change P2 : " + playerTwo.name + " Name"}, "Options");
 		switch (act) {
 		case 0:
 			finished = true;
@@ -295,6 +297,14 @@ void options() {
 
 		case 3:
 			playerOne.color = colorChoice({ playerTwo.name, 0 });
+			break;
+
+		case 4:
+			inputName(playerOne);
+			break;
+
+		case 5:
+			inputName(playerTwo);
 			break;
 
 		default:
@@ -333,28 +343,15 @@ void mainMenu() {
 
 }
 
+
+
+
+
+
 int main() {
 
-	/*vector<Player> players{};
-	players.push_back(Player("test", 100, 0));
-	players.push_back(Player("Mei", 10, 123));
-	players.push_back(Player("Sam", 0, 0123));
-	players.push_back(Player("Thomas", 1130, 51));
-	WriteToLog(players, playersFile);
-
-	vector<Player> players2 = LoadFromLog("Players.txt");
-	for (int i = 0; i < players2.size(); i++) {
-		players2[i].printInfo();
-	}*/
-
-	//LoadFromLog("Players.txt");
-
-	//for (int i = 0; i < players.size(); i++) {
-	//	cout << "name : " << players[i]->name << " wins : " << players[i]->wins << " losses : " << players[i]->losses << endl;
-	//}
-	
-
-	//return 0;
+	inputName(playerOne);
+	inputName(playerTwo);
 
 	mainMenu();
 
@@ -369,6 +366,35 @@ void ClearCin() {
 }
 
 // AI --------------------------------------
+
+void AnimateAIDecition(std::vector<std::vector<Tile>>& a_board, int dropPoint) {
+	//animate where to place
+	bool inPlace{ false };
+	while (inPlace == false) {
+
+		system("cls");
+		addColor(playerTwo.color);
+		cout << "The AI is thinking..." << endl << endl << termcolor::reset;
+
+		AIShowSlot(a_board, false);
+		drawBoard(a_board);
+
+		//this isnt the most random number generator, but its easy and fast to implement srand() seed is in init();
+		Sleep(rand() % 700);
+
+		if (globalDP > dropPoint) {
+			globalDP--;
+		}
+		else if (globalDP < dropPoint) {
+			globalDP++;
+		}
+		else {
+			inPlace = true;
+
+		}
+
+	}
+}
 
 /// <summary>
 /// for the score i used some of the scruture from this connect four alg https://github.com/KeithGalli/Connect4-Python/blob/503c0b4807001e7ea43a039cb234a4e55c4b226c/connect4_with_ai.py#L85
@@ -571,6 +597,15 @@ int Choice(vector<string> options, string title) {
 			}
 			else {
 				cout << "    ";
+
+				////if an optional color was inputed
+				//if (colors.size()>0) {
+				//	if (colors[i] =! -1) {
+				//		addColor(colors[i]);
+				//	}
+				//}
+
+
 			}
 			cout << options[i] << endl;
 			cout << termcolor::reset;
@@ -671,27 +706,29 @@ void InitGame() {
 
 	int AiAns = Choice({ "yes", "no" }, "Do You want to play agenst a AI? (AI is always second player)");
 	bool activeAI{ false };
-	if (AiAns == 0)
+	if (AiAns == 0) {
 		activeAI = true;
+		playerTwo.name = "AI";
+	}
 	else
 		activeAI = false;
 
-	inputName(activeAI);
+	//inputName(activeAI, );
 	mainGameloop(board, activeAI);
 }
 
-void inputName(bool _activeAI) {
+void inputName(Player& a_player) {
 	system("cls");
-	cout << "Please input player one name : ";
-	addColor(playerOne.color);
+	cout << "Please input player's one name : ";
+	addColor(a_player.color);
 	string name{};
 	std::getline(cin, name);
 	cout << termcolor::reset;
-	playerOne.name = name;
+	a_player.name = name;
 
 
 	cout << endl;
-	system("cls");
+	/*system("cls");
 	if (!_activeAI) {
 		cout << "Please input player two name : ";
 		addColor(playerTwo.color);
@@ -701,8 +738,10 @@ void inputName(bool _activeAI) {
 	}
 	else {
 		playerTwo.name = "AI";
-	}
+	}*/
 }
+
+
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 	bool finishedGame{ false };
@@ -722,33 +761,8 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 			vector<int>arr = minimax(a_board, Position(0, 0), 5, -10000, 10000, true);
 			dropPoint = arr[1];
 
-			//animate where to place
-			bool inPlace{ false };
 			
-			while (inPlace == false) {
-
-				system("cls");
-				addColor(playerTwo.color);
-				cout << playerTwo.name << "'s turn!!!" << endl << endl << termcolor::reset;
-
-				AIShowSlot(a_board, false);
-				drawBoard(a_board);
-
-				Sleep(rand() % 1700);
-
-				if (globalDP > dropPoint) {
-					globalDP--;
-				}
-				else if (globalDP < dropPoint) {
-					globalDP++;
-				}
-				else {
-					inPlace = true;
-					
-				}
-				//this isnt the most random number generator, but its easy and fast to implement srand() seed is in init();
-
-			}
+			AnimateAIDecition(a_board, dropPoint);
 
 
 #pragma region MyRegion
@@ -814,7 +828,7 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		cout << score.size() << endl;
 		//system("pause");
 
-
+		//if a player has won logic
 		if (score.size() >= 4) {
 			assignWinnerTilesBoard(a_board, score);
 
@@ -1116,7 +1130,7 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 }
 
 void AIShowSlot(vector<vector<Tile>> a_board, bool empty) {
-	cout << " "; // spacing
+	cout << " " << termcolor::reset; // spacing
 	for (size_t i = 0; i < a_board.size(); i++) { // draws the top bar
 		if (i == globalDP && !empty) {
 			addColor(playerTwo.color);
