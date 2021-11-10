@@ -21,8 +21,7 @@ using std::string;
 
 char activePlayer{};
 
-Player playerOne{"", 0, 0, 3, 'X'};
-Player playerOne{"", 0, 0, 4, 'O' };
+
 
 //char  p1 = 'X';
 //string p1Name{ "PLAYER ONE" };

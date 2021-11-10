@@ -37,6 +37,9 @@ void addColor(int col) {
 }
 
 
+Player playerOne( "", 0, 0, 3, 'X' );
+Player playerTwo( "", 0, 0, 4, 'O' ); 
+
 vector<Player> loadFromLog(string filepath) {
 	// MULTIPLE OBJECT ATTEMPT
 #pragma region MyRegion
@@ -236,6 +239,10 @@ void AddOrModifyPlayer(/*vector<Player> &a_players,*/ string filepath, Player a_
 	writeToLog(a_players, filepath);
 }
 
+void setPlayerColor() {
+
+}
+
 void options() {
 	string ans{};
 	int act = Choice({ "Return to Main Menu", "Empty space symbol" }, "Welcome to Connect 4 !!!");
@@ -360,8 +367,8 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 			return  vector<int>{1000, pos.x};
 		}
 		else {
-			return vector<int>{ scoreOfBoard(a_board, p2), pos.x};
-			//return {0, pos.x};
+			//return vector<int>{ scoreOfBoard(a_board, playerTwo.symbol), pos.x};
+			return {0, pos.x};
 		}
 	}
 
@@ -377,7 +384,7 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 
 			int n = calcFallPos(a_board, i); // gets the fallposition
 			char temp = a_board[i][n].item;
-			a_board[i][n].item = p2; // the new gamestate
+			a_board[i][n].item = playerTwo.symbol; // the new gamestate
 
 			int eval = minimax(a_board, Position(i, n), depth - 1, false)[0];
 			if (maxEval < eval) {
@@ -400,7 +407,7 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 
 			int n = calcFallPos(a_board, i); // gets the fallposition
 			char temp = a_board[i][n].item;
-			a_board[i][n].item = p1; // the new gamestate
+			a_board[i][n].item = playerOne.symbol; // the new gamestate
 			
 			int eval = minimax(a_board, Position(i, n), depth - 1, true)[0];
 			if (maxEval > eval) {
@@ -569,16 +576,21 @@ void inputNames(bool _activeAI) {
 	system("cls");
 	cout << "Please input player one name : ";
 	addColor(1);
-	std::getline(cin, p1Name);
+	string name{};
+	std::getline(cin, name);
+	playerOne.name = name;
+
+
 	cout << endl;
 	system("cls");
 	if (!_activeAI) {
 		cout << "Please input player two name : ";
-		std::getline(cin, p2Name);
+		std::getline(cin, name);
+		playerTwo.name = name;
 		cout << endl;
 	}
 	else {
-		p2Name = "AI";
+		playerTwo.name = "AI";
 	}
 }
 
@@ -589,7 +601,7 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		turn++;
 		system("cls");
 		int dropPoint{};
-		if (activePlayer == p2 && a_activeAI) {
+		if (activePlayer == playerTwo.symbol && a_activeAI) {
 			//old method
 			vector<int>arr = minimax(a_board, Position(0, 0), 4, true);
 			dropPoint = arr[1];
@@ -662,10 +674,10 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 			assignWinnerTilesBoard(a_board, score);
 
 			string winningPlayer{};
-			if (activePlayer == p1)
-				winningPlayer = p1Name;
+			if (activePlayer == playerOne.symbol)
+				winningPlayer = playerOne.name;
 			else
-				winningPlayer = p2Name;
+				winningPlayer = playerTwo.name;
 
 
 			system("cls");
@@ -688,15 +700,21 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		toggleActivePlayer();
 	}
 
+
 	//update the players.txt file
-	if (activePlayer == p2) { // have to compansate for the last run of toggle active player
-		AddOrModifyPlayer(playersFile, Player(p1Name, 1, 0, 0, 'X'));
-		AddOrModifyPlayer(playersFile, Player(p2Name, 0, 1, 0, 'O'));
+	int add = 1;
+	if (activePlayer == playerTwo.symbol) {
+		playerOne.wins = 1;
+		playerTwo.losses = 1;
 	}
 	else {
-		AddOrModifyPlayer(playersFile, Player(p1Name, 0, 1, 0, 'X'));
-		AddOrModifyPlayer(playersFile, Player(p2Name, 1, 0, 0, 'O'));
+		playerOne.losses = 1;
+		playerTwo.wins = 1;
 	}
+
+	AddOrModifyPlayer(playersFile, playerOne);
+	AddOrModifyPlayer(playersFile, playerTwo);
+
 
 
 	//play again ? 
@@ -747,11 +765,11 @@ bool isBoardFull(vector<vector<Tile>> a_board) {
 /// toggles what player is the active player
 /// </summary>
 void toggleActivePlayer() {
-	if (activePlayer == p1) {
-		activePlayer = p2;
+	if (activePlayer == playerOne.symbol) {
+		activePlayer = playerTwo.symbol;
 	}
 	else {
-		activePlayer = p1;
+		activePlayer = playerOne.symbol;
 	}
 }
 
@@ -858,10 +876,10 @@ void drawBoard(vector<vector<Tile>> a_board) {
 			if (tile.winnerTile) {
 				cout << termcolor::magenta;
 			}
-			else if (tile.item == p1) {
+			else if (tile.item == playerOne.symbol) {
 				cout << termcolor::bright_cyan;
 			}
-			else if (tile.item == p2) {
+			else if (tile.item == playerTwo.symbol) {
 				cout << termcolor::bright_red;
 			}
 			
@@ -883,14 +901,14 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 	while (!finished) {
 		system("cls");
 		//displays the active player
-		if (activePlayer == p1) {
-			cout << p1Name;
+		if (activePlayer == playerOne.symbol) {
+			cout << playerOne.name;
 		}
 		else {
-			cout << p2Name;
+			cout << playerTwo.name;
 		}
 		cout << "'s turn!";
-		if (a_activeAI && activePlayer == p2) {
+		if (a_activeAI && activePlayer == playerTwo.symbol) {
 			cout << "  (AI)";
 		}
 			
@@ -903,10 +921,10 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 			char content{ ' ' };
 			if (i == currentChoice) {
 				content = activePlayer;
-				if (activePlayer == p1) {
+				if (activePlayer == playerOne.symbol) {
 					cout << termcolor::bright_cyan;
 				}
-				else if (activePlayer == p2) {
+				else if (activePlayer == playerTwo.symbol) {
 					cout << termcolor::bright_red;
 				}
 			}

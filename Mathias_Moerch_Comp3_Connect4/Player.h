@@ -10,7 +10,7 @@ public:
 	int wins{};
 	int losses{};
 	int color{};
-	char symbol{ 'A' };
+	char symbol{};
 
 	void printInfo() {
 		std::cout << "name    : " << name << std::endl;

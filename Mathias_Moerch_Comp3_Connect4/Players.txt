@@ -2,10 +2,11 @@ test:100:0
 Mei:10:123
 Sam:0:83
 Thomas:1130:51
-Mat:0:3
+Mat:0:4
 Jon:2:0
 Mai:0:1
-AI:3:0
+AI:7:0
 a:1:0
 b:0:1
-MAT:0:1
+MAT:-1:2
+<msy:0:1
