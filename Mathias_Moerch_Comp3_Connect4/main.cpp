@@ -349,7 +349,7 @@ void ClearCin() {
 /// <param name="depth"></param>
 /// <param name="maximizing"></param>
 /// <returns>return vector<int>(2), 0 is score, 1 is path</returns>
-vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool maximizing) { // first is score, second is path
+vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, int alpha, int beta, bool maximizing) { // first is score, second is path
 
 	int score = scoreOfTile(pos, a_board).size();
 	//int score = 1;
@@ -386,10 +386,17 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 			char temp = a_board[i][n].item;
 			a_board[i][n].item = playerTwo.symbol; // the new gamestate
 
-			int eval = minimax(a_board, Position(i, n), depth - 1, false)[0];
+			int eval = minimax(a_board, Position(i, n), depth - 1, alpha, beta, false)[0];
 			if (maxEval < eval) {
 				path = i;
 			}
+			//pruning
+			alpha = max(alpha, eval);
+			if (beta <= alpha) {
+				break;
+			}
+
+			//eval
 			maxEval = max(maxEval, eval); 
 
 			a_board[i][n].item = temp; // reverses the change, for next iteration of for loop
@@ -409,10 +416,17 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool 
 			char temp = a_board[i][n].item;
 			a_board[i][n].item = playerOne.symbol; // the new gamestate
 			
-			int eval = minimax(a_board, Position(i, n), depth - 1, true)[0];
+			int eval = minimax(a_board, Position(i, n), depth - 1, alpha, beta, true)[0];
 			if (maxEval > eval) {
 				path = i;
 			}
+			//pruning
+			beta = min(beta, eval);
+			if (beta <= alpha) {
+				break;
+			}
+
+			//eval
 			maxEval = min(maxEval, eval);
 
 			a_board[i][n].item = temp;
@@ -603,7 +617,7 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		int dropPoint{};
 		if (activePlayer == playerTwo.symbol && a_activeAI) {
 			//old method
-			vector<int>arr = minimax(a_board, Position(0, 0), 4, true);
+			vector<int>arr = minimax(a_board, Position(0, 0), 5, -10000, 10000, true);
 			dropPoint = arr[1];
 
 #pragma region MyRegion

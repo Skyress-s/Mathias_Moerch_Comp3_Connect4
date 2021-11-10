@@ -48,7 +48,7 @@ void mainMenu();
 
 // AI --------------------------------------
 
-vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, bool maximizing);
+vector<int> minimax(vector<vector<Tile>> a_board, Position pos,  int depth, int alpha, int beta, bool maximizing);
 
 vector<Position> scoreOfTile(Position pos, vector<vector<Tile>> a_board);
 

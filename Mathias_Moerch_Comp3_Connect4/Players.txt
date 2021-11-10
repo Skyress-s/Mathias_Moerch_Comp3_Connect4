@@ -5,8 +5,8 @@ Thomas:1130:51
 Mat:0:4
 Jon:2:0
 Mai:0:1
-AI:7:0
+AI:7:2
 a:1:0
 b:0:1
-MAT:-1:2
+MAT:1:2
 <msy:0:1
