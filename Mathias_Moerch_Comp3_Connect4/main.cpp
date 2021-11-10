@@ -38,7 +38,7 @@ void addColor(int col) {
 
 
 Player playerOne( "PlayerONE", 0, 0, 3, 'X' );
-Player playerTwo( "PLAYER TWO", 0, 0, 4, 'O' ); 
+Player playerTwo( "PLAYER TWO", 0, 0, 5, 'O' ); 
 
 vector<Player> loadFromLog(string filepath) {
 	// MULTIPLE OBJECT ATTEMPT
@@ -146,10 +146,17 @@ vector<Player> loadFromLog(string filepath) {
 		string seg2 = lines[i].substr(0, pos2);
 		lines[i].erase(0, pos2 + 1); // adds one to also remove the ":"
 
+
+		int pos3 = lines[i].find(':');
+		string seg3 = lines[i].substr(0, pos3);
+		lines[i].erase(0, pos3 + 1); // adds one to also remove the ":"
+
+
 		Player temp("", 0, 0, 0, ' ');
 		temp.name = seg1;
 		temp.wins = std::stoi(seg2);
-		temp.losses = std::stoi(lines[i]);
+		temp.losses = std::stoi(seg3);
+		temp.color = std::stoi(lines[i]);
 
 		players.push_back(temp);
 
@@ -157,24 +164,6 @@ vector<Player> loadFromLog(string filepath) {
 	return players;
 }
 
-void stats() {
-	system("cls");
-	// adds the color
-	addColor(4);
-	cout << " ->  Return to Meny" << endl << endl << termcolor::reset;
-
-	vector<Player> players = loadFromLog(playersFile);
-
-	for (size_t i = 0; i < players.size(); i++) {
-		cout << "    Player : " << players[i].name << endl;
-		cout << "    Wins   : " << players[i].wins << endl;
-		cout << "    losses : " << players[i].losses << endl;
-		cout << endl;
-	}
-
-	system("pause>0");
-
-}
 
 void writeToLog(vector<Player> a_players, string filepath) {
 #pragma region maisam Serializing classes
@@ -214,7 +203,8 @@ void writeToLog(vector<Player> a_players, string filepath) {
 		
 		stringToWrite += a_players[i].name + ':';
 		stringToWrite += std::to_string(a_players[i].wins) + ':';
-		stringToWrite += std::to_string(a_players[i].losses);
+		stringToWrite += std::to_string(a_players[i].losses) + ':';
+		stringToWrite += std::to_string(a_players[i].color);
 
 		file << stringToWrite;
 		if (i != a_players.size() - 1) {
@@ -226,7 +216,27 @@ void writeToLog(vector<Player> a_players, string filepath) {
 	return;
 }
 
-void AddOrModifyPlayer(/*vector<Player> &a_players,*/ string filepath, Player a_newP) {
+void stats() {
+	system("cls");
+	// adds the color
+	addColor(4);
+	cout << " ->  Return to Meny" << endl << endl << termcolor::reset;
+
+	vector<Player> players = loadFromLog(playersFile);
+
+	for (size_t i = 0; i < players.size(); i++) {
+		addColor(players[i].color);
+		cout << "    Player : " << players[i].name << endl;
+		cout << "    Wins   : " << players[i].wins << endl;
+		cout << "    losses : " << players[i].losses << endl;
+		cout << endl << termcolor::reset;
+	}
+
+	system("pause");
+
+}
+
+void AddOrModifyPlayer(string filepath, Player a_newP) {
 	//loads the players
 	vector<Player> a_players = loadFromLog(filepath);
 
@@ -236,6 +246,7 @@ void AddOrModifyPlayer(/*vector<Player> &a_players,*/ string filepath, Player a_
 		if (a_players[i].name == a_newP.name) {
 			a_players[i].wins += a_newP.wins;
 			a_players[i].losses += a_newP.losses;
+			a_players[i].color = a_newP.color;
 			break;
 		}
 
@@ -260,38 +271,41 @@ void setPlayerColor() {
 }
 
 void options() {
-	string ans{};
-	
-	int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color"}, "Options");
-	switch (act) {
-	case 0:
-		//mainMenu();
-		break;
+	bool finished{ false };
+	while (!finished) {
+		string ans{};
+		int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color"}, "Options");
+		switch (act) {
+		case 0:
+			finished = true;
+			break;
 
-	case 1:
-		system("cls");
-		cout << "Please enter a new Empty Space Symbol : ";
-		cin >> ans;
-		ClearCin();
-		EMPTY_PIECE = ans[0];
-		break;
+		case 1:
+			system("cls");
+			cout << "Please enter a new Empty Space Symbol : ";
+			cin >> ans;
+			ClearCin();
+			EMPTY_PIECE = ans[0];
+			break;
 
-	case 2:
-		playerOne.color = colorChoice({ playerOne.name, 0});
+		case 2:
+			playerOne.color = colorChoice({ playerOne.name, 0});
 
-		break;
+			break;
 
-	case 3:
-		playerOne.color = colorChoice({ playerTwo.name, 0 });
-		break;
+		case 3:
+			playerOne.color = colorChoice({ playerTwo.name, 0 });
+			break;
 
-	default:
-		break;
+		default:
+			break;
+		}
 	}
 }
 
 void mainMenu() {
-	while (true) {
+	bool finished{ false };
+	while (!finished) {
 
 		//vector<std::pair<string, int>> choices = { {"Start", 0}, {"Options", 0}, {"Stats", 0}, {"Exit", 0} };
 		int act = Choice({"Start", "Options", "Stats", "Exit"}, "Welcome to Connect 4 !!!");
@@ -309,6 +323,7 @@ void mainMenu() {
 			break;
 
 		case 3:
+			finished = true;
 			break;
 
 		default:
@@ -317,9 +332,6 @@ void mainMenu() {
 	}
 
 }
-
-
-
 
 int main() {
 
@@ -379,7 +391,6 @@ vector<int> minimax(vector<vector<Tile>> a_board, Position pos, int depth, int a
 			return  vector<int>{-1000, pos.x};
 		}
 		else if (score >= 4 && maximizing == false) {
-			
 			/*drawBoard(a_board);
 			cout << "AI WON!" << endl;
 			system("pause");*/
@@ -552,10 +563,10 @@ int Choice(vector<string> options, string title) {
 	bool accAns{};
 	while (!accAns) {
 		system("cls");
-		//addColor(title.second);
 		cout << title << endl << endl;
 		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
 			if (currentChoice == i) {
+				cout << termcolor::bright_cyan;
 				cout << " ->   ";
 			}
 			else {
@@ -656,8 +667,7 @@ int colorChoice( std::pair<string, int> title) {
 
 void InitGame() {
 	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{ EMPTY_PIECE, false }));
-
-	activePlayer = 'X';
+	srand(time(0));
 
 	int AiAns = Choice({ "yes", "no" }, "Do You want to play agenst a AI? (AI is always second player)");
 	bool activeAI{ false };
@@ -666,11 +676,11 @@ void InitGame() {
 	else
 		activeAI = false;
 
-	inputNames(activeAI);
+	inputName(activeAI);
 	mainGameloop(board, activeAI);
 }
 
-void inputNames(bool _activeAI) {
+void inputName(bool _activeAI) {
 	system("cls");
 	cout << "Please input player one name : ";
 	addColor(playerOne.color);
@@ -696,15 +706,50 @@ void inputNames(bool _activeAI) {
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 	bool finishedGame{ false };
-
+	activePlayer = playerOne.symbol;
 	while (!finishedGame) {
 		turn++;
 		system("cls");
 		int dropPoint{};
 		if (activePlayer == playerTwo.symbol && a_activeAI) {
-			//old method
+			//some flavor to show the AI is thinking
+			system("cls");
+			addColor(playerTwo.color);
+			cout << "The AI is thinking..." << endl << endl;
+			AIShowSlot(a_board, false);
+			drawBoard(a_board);
+
 			vector<int>arr = minimax(a_board, Position(0, 0), 5, -10000, 10000, true);
 			dropPoint = arr[1];
+
+			//animate where to place
+			bool inPlace{ false };
+			
+			while (inPlace == false) {
+
+				system("cls");
+				addColor(playerTwo.color);
+				cout << playerTwo.name << "'s turn!!!" << endl << endl << termcolor::reset;
+
+				AIShowSlot(a_board, false);
+				drawBoard(a_board);
+
+				Sleep(rand() % 1700);
+
+				if (globalDP > dropPoint) {
+					globalDP--;
+				}
+				else if (globalDP < dropPoint) {
+					globalDP++;
+				}
+				else {
+					inPlace = true;
+					
+				}
+				//this isnt the most random number generator, but its easy and fast to implement srand() seed is in init();
+
+			}
+
 
 #pragma region MyRegion
 
@@ -891,7 +936,7 @@ int calcFallPos(vector<vector<Tile>> a_board, int a_dp) {
 
 void castRay(Position pos, Position dir, vector<vector<Tile>> a_board, vector<Position> &score) {
 	char placedSym = a_board[pos.x][pos.y].item;
-	//vector<position> score{};
+	
 	
 	int i{ 1 };
 	while (true) {
@@ -960,6 +1005,8 @@ void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration) {
 		}
 		
 		system("cls");
+		cout << endl << endl;
+		AIShowSlot(a_board, true);
 		drawBoard(a_board);
 		Sleep(stepDuration);
 		currentHeight--;
@@ -1022,7 +1069,7 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 		cout << " ";
 		for (int i = 0; i < a_board.size(); i++) {
 			char content{ ' ' };
-			if (i == currentChoice) {
+			if (i == globalDP) {
 				content = activePlayer;
 				if (activePlayer == playerOne.symbol) {
 					addColor(playerOne.color);
@@ -1040,20 +1087,20 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 		char ans = _getch();
 		switch (tolower(ans)) {
 		case 'd':
-			if (currentChoice + 1 < a_board.size()) {
-				currentChoice++;
+			if (globalDP + 1 < a_board.size()) {
+				globalDP++;
 			}
 			else {
-				currentChoice = 0;
+				globalDP = 0;
 			}
 			break;
 
 		case 'a':
-			if (currentChoice -1 >= 0) {
-				currentChoice--;
+			if (globalDP -1 >= 0) {
+				globalDP--;
 			}
 			else {
-				currentChoice = a_board.size() - 1;
+				globalDP = a_board.size() - 1;
 			}
 			break;
 
@@ -1065,7 +1112,22 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 			break;
 		}
 	}
-	return currentChoice;
+	return globalDP;
+}
+
+void AIShowSlot(vector<vector<Tile>> a_board, bool empty) {
+	cout << " "; // spacing
+	for (size_t i = 0; i < a_board.size(); i++) { // draws the top bar
+		if (i == globalDP && !empty) {
+			addColor(playerTwo.color);
+			cout << '[' << playerTwo.symbol;
+		}
+		else {
+			cout << '[' << ' ';
+		}
+		cout << ']' << termcolor::reset;
+	}
+	cout << endl;
 }
 
 void assignWinnerTilesBoard(vector<vector<Tile>> &a_board, vector<Position> poses) {

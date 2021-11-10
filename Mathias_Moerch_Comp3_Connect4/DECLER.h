@@ -21,6 +21,8 @@ using std::string;
 
 char activePlayer{};
 
+int globalDP{ 3 };
+
 
 
 //char  p1 = 'X';
@@ -72,7 +74,7 @@ int colorChoice( std::pair<string, int> title);
 
 void InitGame();
 
-void inputNames(bool);
+void inputName(bool);
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI);
 
@@ -99,6 +101,8 @@ void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration);
 void drawBoard(vector<vector<Tile>> a_board);
 
 int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI);
+
+void AIShowSlot(vector<vector<Tile>> a_board, bool empty);
 
 void assignWinnerTilesBoard(vector<vector<Tile>>& a_board, vector<Position> poses);
 
