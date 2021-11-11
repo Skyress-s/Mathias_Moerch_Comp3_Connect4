@@ -1,358 +1,21 @@
 #include "DECLER.h"
 
 std::mutex mtx;
-void addColor(int col) {
-	switch (col) {
-	case 0:
-		cout << termcolor::red;
-		break;
 
-	case 1:
-		cout << termcolor::green;
-		break;
-
-	case 2:
-		cout << termcolor::blue;
-		break;
-
-	case 3:
-		cout << termcolor::bright_red;
-		break;
-
-	case 4:
-		cout << termcolor::bright_green;
-		break;
-	case 5:
-		cout << termcolor::bright_blue;
-		break;
-
-	default:
-		break;
-	}
-}
 
 
 Player playerOne( "Player ONE", 0, 0, 3, 'X' );
 Player playerTwo( "PLAYER TWO", 0, 0, 5, 'O' ); 
 
-// EXTERNAL DATA -----------------------------
-
-vector<Player> loadFromLog(string filepath) {
-	// MULTIPLE OBJECT ATTEMPT
-#pragma region MyRegion
-
-
-
-	
-
-	////read!
-	//vector<Player> players{};
-
-	//std::ifstream file2{};
-	//file2.open(filepath);
-
-	////while (file2.good()) {
-	//	Player temp("empty", 0, 0);
-
-	//	file2.read((char*)&temp, sizeof(p1));
-	//	players.push_back(temp);
-
-	////}
-
-	//
-	//file2.close();
-
-	//for (int i = 0; i < players.size(); i++) {
-	//	cout << "name : " << players[i].name << " wins : " << players[i].wins << " losses : " << players[i].losses << endl;
-	//}
-
-
-	//return vector<Player*>{};
-
-
-	//single object read write ---------------
-
-	//write -------------------------------
-
-	//vector<Player*> players{};
-	//
-	//Player p1("Konas", 31230, 12114);
-
-
-	//std::ofstream file(filepath);
-	////std::ofstream file{};
-	////file.open(filepath, std::ios::app);
-
-	//file.write((char*)&p1, sizeof(p1));
-
-	//file.close();
-
-	//read --------------
-
-
-	//Player* p2 = new Player("", 0, 0);
-
-	////std::ifstream file2(filepath);
-	//std::ifstream file2;
-	//file2.open(filepath, std::ios::in);
-
-
-	//file2.read((char*)& p2, sizeof(p2));
-	////file2 >> p2;
-
-
-	//file2.close();
-	////cout << "name : " << p2.name << " wins : " << p2.wins << " losses : " << p2.losses << endl;
-	//cout << "name : " << p2->name << " wins : " << p2->wins << " losses : " << p2->losses << endl;
-
-#pragma endregion
-	//checks if the file is empty
-	if (true) {
-		std::ifstream file{};
-		file.open(filepath);
-		
-	}
-
-	std::ifstream file{};
-	file.open(filepath);
-
-	if (file.peek() == std::ifstream::traits_type::eof()) { // this little snippet for checking if the file is empty is from https://kodlogs.com/blog/14054/c-check-if-file-is-empty
-		return vector<Player>{};
-	}
-
-
-	vector<string> lines{};
-
-	string line{};
-	while (file.good()) {
-		std::getline(file, line);
-		lines.push_back(line);
-	}
-
-	vector<Player> players{};
-
-	for (int i = 0; i < lines.size(); i++) {
-
-
-		int pos1 = lines[i].find(':');
-		string seg1 = lines[i].substr(0, pos1);
-		lines[i].erase(0, pos1 + 1); // adds one to also remove the ":"
-
-
-		int pos2 = lines[i].find(':');
-		string seg2 = lines[i].substr(0, pos2);
-		lines[i].erase(0, pos2 + 1); // adds one to also remove the ":"
-
-
-		int pos3 = lines[i].find(':');
-		string seg3 = lines[i].substr(0, pos3);
-		lines[i].erase(0, pos3 + 1); // adds one to also remove the ":"
-
-
-		Player temp("", 0, 0, 0, ' ');
-		temp.name = seg1;
-		temp.wins = std::stoi(seg2);
-		temp.losses = std::stoi(seg3);
-		temp.color = std::stoi(lines[i]);
-
-		players.push_back(temp);
-
-	}
-	return players;
-}
-
-void writeToLog(vector<Player> a_players, string filepath) {
-#pragma region maisam Serializing classes
-
-
-
-	////write
-	//vector<Player*> players{};
-	//players.push_back(new Player("test", 100, 0));
-	//players.push_back(new Player("Mei", 10, 123));
-	//players.push_back(new Player("Sam", 0, 0123));
-	//players.push_back(new Player("Thomas", 1130, 51));
-
-	//std::ofstream file{};
-	//file.open(filepath);
-
-	//for (int i = 0; i < players.size(); i++) {
-	//	file.write((char*)&players[i], sizeof(players[i])); // the size of needed to be updated
-
-	//}
-
-	////deletes all the excess object
-	//for (int i = 0; i < players.size(); i++) {
-	//	delete(players[i]);
-	//}
-
-	//file.close();
-#pragma endregion
-
-	
-
-	std::ofstream file{};
-	file.open(filepath, std::ios::out);
-
-	for (int i = 0; i < a_players.size(); i++) {
-		string stringToWrite{};
-		
-		stringToWrite += a_players[i].name + ':';
-		stringToWrite += std::to_string(a_players[i].wins) + ':';
-		stringToWrite += std::to_string(a_players[i].losses) + ':';
-		stringToWrite += std::to_string(a_players[i].color);
-
-		file << stringToWrite;
-		if (i != a_players.size() - 1) {
-
-			file << endl;
-		}
-	}
-
-	return;
-}
-
-void AddOrModifyPlayer(string filepath, Player a_newP) {
-	//loads the players
-	vector<Player> a_players = loadFromLog(filepath);
-
-	
-
-	for (int i = 0; i < a_players.size(); i++) {
-		if (a_players[i].name == a_newP.name) {
-			a_players[i].wins += a_newP.wins;
-			a_players[i].losses += a_newP.losses;
-			a_players[i].color = a_newP.color;
-			break;
-		}
-
-		if (i == a_players.size() - 1) {
-			a_players.push_back(a_newP);
-			break;
-		}
-	}
-
-	//edge case if the file is empty
-	if (a_players.size() == 0) {
-		a_players.push_back(a_newP);
-	}
-
-
-	//saves them agian
-	writeToLog(a_players, filepath);
-}
 
 // MENUS --------------------------
-
-void stats() {
-	system("cls");
-	// adds the color
-	
-
-	vector<Player> players = loadFromLog(playersFile);
-	
-	cout << termcolor::bright_blue << "  Stats" << endl << endl;
-	for (size_t i = 0; i < players.size(); i++) {
-		addColor(players[i].color);
-		cout << "    Player : " << players[i].name << endl;
-		cout << "    Wins   : " << players[i].wins << endl;
-		cout << "    losses : " << players[i].losses << endl;
-		cout << endl << termcolor::reset;
-	}
-
-	addColor(4);
-	cout << " ->  Return to Meny" << endl << endl << termcolor::reset;
-
-	system("pause");
-
-}
-
-void setPlayerColor() {
-
-}
-
-void options() {
-	bool finished{ false };
-	while (!finished) {
-		string ans{};
-		int act = Choice({"Return to Main Menu", "Empty space symbol", "Player One Color", "Player Two Color", "Change P1 : " + playerOne.name,
-			"Change P2 : " + playerTwo.name}, "Options");
-		switch (act) {
-		case 0:
-			finished = true;
-			break;
-
-		case 1:
-			system("cls");
-			cout << "Please enter a new Empty Space Symbol : ";
-			cin >> ans;
-			ClearCin();
-			EMPTY_PIECE = ans[0];
-			break;
-
-		case 2:
-			playerOne.color = colorChoice({ playerOne.name, 0});
-
-			break;
-
-		case 3:
-			playerOne.color = colorChoice({ playerTwo.name, 0 });
-			break;
-
-		case 4:
-			inputName(playerOne);
-			break;
-
-		case 5:
-			inputName(playerTwo);
-			break;
-
-		default:
-			break;
-		}
-	}
-}
-
-void mainMenu() {
-	bool finished{ false };
-	while (!finished) {
-
-		//vector<std::pair<string, int>> choices = { {"Start", 0}, {"Options", 0}, {"Stats", 0}, {"Exit", 0} };
-		int act = Choice({"Play Duos", "Player Against AI", "Options", "Stats", "Exit"}, "Welcome to Connect 4 !!!");
-		switch (act) {
-		case 0:
-			InitGame(false);
-			break;
-
-		case 1:
-			InitGame(true);
-			break;
-
-		case 2:
-			options();
-			break;
-
-		case 3:
-			stats();
-			break;
-
-		case 4:
-			finished = true;
-			break;
-
-		default:
-			break;
-		}
-	}
-
-}
 
 
 
 int main() {
 
-	inputName(playerOne);
-	inputName(playerTwo);
+	/*inputName(playerOne);
+	inputName(playerTwo);*/
 
 	mainMenu();
 
@@ -584,127 +247,16 @@ int evalRowOfFour(vector<int> row, char player) {
 
 // GAME LOGIC ------------------------------
 
-int Choice(vector<string> options, string title) {
-	//defines current choice, this will be used as the return value and to determine where to draw the arrow
-	int currentChoice{};
-	bool accAns{};
-	while (!accAns) {
-		system("cls");
-		cout << title << endl << endl;
-		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
-			if (currentChoice == i) {
-				cout << termcolor::bright_cyan;
-				cout << " ->   ";
-			}
-			else {
-				cout << "    ";
 
-				////if an optional color was inputed
-				//if (colors.size()>0) {
-				//	if (colors[i] =! -1) {
-				//		addColor(colors[i]);
-				//	}
-				//}
-
-
-			}
-			cout << options[i] << endl;
-			cout << termcolor::reset;
-		}
-
-		char input = _getch();
-		switch (tolower(input)) {
-		case 'w': // if by pressing w, you go under 0, reset to top of array
-			if (currentChoice - 1 < 0) {
-				currentChoice = options.size() - 1;
-				break;
-			}
-			currentChoice += -1;
-			break;
-
-		case 's':// if by pressing s, you go over options size, reset to bottom of array
-			if (currentChoice + 1 >= options.size()) {
-				currentChoice = 0;
-				break;
-			}
-			currentChoice += 1;
-			break;
-
-		case ' ':
-			accAns = true;
-			break;
-
-		default:
-			break;
-		}
-	}
-	return currentChoice;
-}
-
-int colorChoice( std::pair<string, int> title) {
-	vector<std::pair<string, int>> options{
-		{"Red", 0},
-		{"Green", 1},
-		{"Blue", 2},
-		{"Bright Red", 3},
-		{"Bright Green", 4},
-		{"Bright Blue", 5}
-	};
-
-	//defines current choice, this will be used as the return value and to determine where to draw the arrow
-	int currentChoice{};
-	bool accAns{};
-	while (!accAns) {
-		system("cls");
-
-		//title color
-		addColor(currentChoice);
-		cout << "   " << title.first << endl << endl << termcolor::reset;
-		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
-			if (currentChoice == i) {
-				addColor(options[i].second);
-				cout << " ->   ";
-			}
-			else {
-				cout << "    ";
-			}
-			cout << options[i].first << endl;
-			cout << termcolor::reset;
-		}
-
-		char input = _getch();
-		switch (tolower(input)) {
-		case 'w': // if by pressing w, you go under 0, reset to top of array
-			if (currentChoice - 1 < 0) {
-				currentChoice = options.size() - 1;
-				break;
-			}
-			currentChoice += -1;
-			break;
-
-		case 's':// if by pressing s, you go over options size, reset to bottom of array
-			if (currentChoice + 1 >= options.size()) {
-				currentChoice = 0;
-				break;
-			}
-			currentChoice += 1;
-			break;
-
-		case ' ':
-			accAns = true;
-			break;
-
-		default:
-			break;
-		}
-	}
-	return currentChoice;
-}
 
 void InitGame(bool activeAI) {
 	vector<vector<Tile>> board(7, vector<Tile>(6, Tile{ EMPTY_PIECE, false }));
 	srand(time(0));
 	activePlayer = &playerOne;
+	if (activeAI) {
+		playerTwo.name = "AI";
+	}
+
 	mainGameloop(board, activeAI);
 }
 
@@ -733,6 +285,7 @@ void inputName(Player& a_player) {
 }
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
+	int add = 1;
 	bool finishedGame{ false };
 	while (!finishedGame) {
 		turn++;
@@ -820,11 +373,15 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 		if (score.size() >= 4) {
 			assignWinnerTilesBoard(a_board, score);
 
-			string winningPlayer{};
-			if (activePlayer->symbol == playerOne.symbol)
-				winningPlayer = playerOne.name;
-			else
-				winningPlayer = playerTwo.name;
+			if (activePlayer->symbol == playerOne.symbol) {
+				playerOne.wins = 1;
+				playerTwo.losses = 1;
+			}
+			else {
+				playerOne.losses = 1;
+				playerTwo.wins = 1;
+			}
+
 
 
 			system("cls");
@@ -835,6 +392,7 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 			finishedGame = true;
 		}
 
+		//draw logic
 		if (isBoardFull(a_board)) {
 			system("cls");
 			drawBoard(a_board);
@@ -850,15 +408,8 @@ void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI) {
 
 
 	//update the players.txt file
-	int add = 1;
-	if (activePlayer->symbol == playerTwo.symbol) {
-		playerOne.wins = 1;
-		playerTwo.losses = 1;
-	}
-	else {
-		playerOne.losses = 1;
-		playerTwo.wins = 1;
-	}
+	
+	
 
 	AddOrModifyPlayer(playersFile, playerOne);
 	AddOrModifyPlayer(playersFile, playerTwo);
@@ -983,7 +534,9 @@ bool isDropPointValid(vector<vector<Tile>> a_board, int a_dropPoint) {
 	}
 }
 
-// VISUAL ----------------------------------
+
+// VISUAL -----------------------
+
 void addDotsToConsole(int dots, float duration) {
 	for (int i = 0; i < dots; i++) {
 		Sleep(duration);
@@ -1006,7 +559,7 @@ void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration) {
 		if (currentHeight < a_board[0].size() - 1) {
 			a_board[pos.x][currentHeight + 1].item = EMPTY_PIECE;
 		}
-		
+
 		system("cls");
 		cout << endl << endl;
 		AIShowSlot(a_board, true);
@@ -1024,7 +577,7 @@ void drawBoard(vector<vector<Tile>> a_board) {
 		for (int j = 0; j < a_board.size(); j++) {
 			Tile tile = a_board[j][a_board[0].size() - i - 1];
 			if (tile.winnerTile) {
-				
+
 				cout << termcolor::magenta;
 			}
 			else if (tile.item == playerOne.symbol) {
@@ -1033,7 +586,7 @@ void drawBoard(vector<vector<Tile>> a_board) {
 			else if (tile.item == playerTwo.symbol) {
 				addColor(playerTwo.color);
 			}
-			
+
 			cout << a_board[j][a_board[0].size() - i - 1].item;
 			cout << termcolor::reset;
 
@@ -1064,7 +617,7 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 		if (a_activeAI && activePlayer->symbol == playerTwo.symbol) {
 			cout << "  (AI)";
 		}
-			
+
 		cout << endl << endl;
 
 
@@ -1099,7 +652,7 @@ int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI) {
 			break;
 
 		case 'a':
-			if (globalDP -1 >= 0) {
+			if (globalDP - 1 >= 0) {
 				globalDP--;
 			}
 			else {
@@ -1133,15 +686,270 @@ void AIShowSlot(vector<vector<Tile>> a_board, bool empty) {
 	cout << endl;
 }
 
-void assignWinnerTilesBoard(vector<vector<Tile>> &a_board, vector<Position> poses) {
+void assignWinnerTilesBoard(vector<vector<Tile>>& a_board, vector<Position> poses) {
 	for (int i = 0; i < poses.size(); i++) {
-		a_board[ poses[i].x ][ poses[i].y ].winnerTile = true;
+		a_board[poses[i].x][poses[i].y].winnerTile = true;
 	}
 }
 
-void changePlayerSymbol(Player a_player) {
+void addColor(int col) {
+	switch (col) {
+	case 0:
+		cout << termcolor::red;
+		break;
+
+	case 1:
+		cout << termcolor::green;
+		break;
+
+	case 2:
+		cout << termcolor::blue;
+		break;
+
+	case 3:
+		cout << termcolor::bright_red;
+		break;
+
+	case 4:
+		cout << termcolor::bright_green;
+		break;
+	case 5:
+		cout << termcolor::bright_blue;
+		break;
+
+	default:
+		break;
+	}
+}
+
+void stats() {
+	system("cls");
+	// adds the color
+
+
+	vector<Player> players = loadFromLog(playersFile);
+
+	cout << termcolor::bright_blue << "  Stats" << endl << endl;
+	for (size_t i = 0; i < players.size(); i++) {
+		addColor(players[i].color);
+		cout << "    Player : " << players[i].name << endl;
+		cout << "    Wins   : " << players[i].wins << endl;
+		cout << "    losses : " << players[i].losses << endl;
+		cout << endl << termcolor::reset;
+	}
+
+	addColor(4);
+	cout << " ->  Return to Meny" << endl << endl << termcolor::reset;
+
+	system("pause");
 
 }
-/////////////// TODO
+
+void options() {
+	bool finished{ false };
+	while (!finished) {
+		string ans{};
+		int act = Choice({ "Return to Main Menu",
+			"Empty space symbol",
+			"P1 : " + playerOne.name + " Color",
+			"P2 : " + playerTwo.name + " Color",
+			"P1 : " + playerOne.name + " Name",
+			"P2 : " + playerTwo.name + " Name" }, "Options");
+		switch (act) {
+		case 0:
+			finished = true;
+			break;
+
+		case 1:
+			system("cls");
+			cout << "Please enter a new Empty Space Symbol : ";
+			cin >> ans;
+			ClearCin();
+			EMPTY_PIECE = ans[0];
+			break;
+
+		case 2:
+			playerOne.color = colorChoice({ playerOne.name, playerOne.color });
+
+			break;
+
+		case 3:
+			playerTwo.color = colorChoice({ playerTwo.name, playerTwo.color });
+			break;
+
+		case 4:
+			inputName(playerOne);
+			break;
+
+		case 5:
+			inputName(playerTwo);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+void mainMenu() {
+	bool finished{ false };
+	while (!finished) {
+
+		//vector<std::pair<string, int>> choices = { {"Start", 0}, {"Options", 0}, {"Stats", 0}, {"Exit", 0} };
+		int act = Choice({ "Play Duos", "Player Against AI", "Options", "Stats", "Exit" }, "Welcome to Connect 4");
+		switch (act) {
+		case 0:
+			InitGame(false);
+			break;
+
+		case 1:
+			InitGame(true);
+			break;
+
+		case 2:
+			options();
+			break;
+
+		case 3:
+			stats();
+			break;
+
+		case 4:
+			finished = true;
+			break;
+
+		default:
+			break;
+		}
+	}
+
+}
+
+int Choice(vector<string> options, string title) {
+	//defines current choice, this will be used as the return value and to determine where to draw the arrow
+	int currentChoice{};
+	bool accAns{};
+	while (!accAns) {
+		system("cls");
+		cout << title << endl << endl;
+		//displays the players and their colors
+		cout << "Player One : ";
+		addColor(playerOne.color);
+		cout << playerOne.name << endl << termcolor::reset;
+		cout << "Player Two : ";
+		addColor(playerTwo.color);
+		cout << playerTwo.name << endl << endl << termcolor::reset;
+
+
+		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
+			if (currentChoice == i) {
+				cout << termcolor::bright_cyan;
+				cout << " ->   ";
+			}
+			else {
+				cout << "    ";
+
+				////if an optional color was inputed
+				//if (colors.size()>0) {
+				//	if (colors[i] =! -1) {
+				//		addColor(colors[i]);
+				//	}
+				//}
+
+
+			}
+			cout << options[i] << endl;
+			cout << termcolor::reset;
+		}
+
+		char input = _getch();
+		switch (tolower(input)) {
+		case 'w': // if by pressing w, you go under 0, reset to top of array
+			if (currentChoice - 1 < 0) {
+				currentChoice = options.size() - 1;
+				break;
+			}
+			currentChoice += -1;
+			break;
+
+		case 's':// if by pressing s, you go over options size, reset to bottom of array
+			if (currentChoice + 1 >= options.size()) {
+				currentChoice = 0;
+				break;
+			}
+			currentChoice += 1;
+			break;
+
+		case ' ':
+			accAns = true;
+			break;
+
+		default:
+			break;
+		}
+	}
+	return currentChoice;
+}
+
+int colorChoice(std::pair<string, int> title) {
+	vector<std::pair<string, int>> options{
+		{"Red", 0},
+		{"Green", 1},
+		{"Blue", 2},
+		{"Bright Red", 3},
+		{"Bright Green", 4},
+		{"Bright Blue", 5}
+	};
+
+	//defines current choice, this will be used as the return value and to determine where to draw the arrow
+	int currentChoice{};
+	bool accAns{};
+	while (!accAns) {
+		system("cls");
+
+		//title color
+		addColor(currentChoice);
+		cout << "   " << title.first << endl << endl << termcolor::reset;
+		for (int i = 0; i < options.size(); i++) {// draws the options, and the arrow where the current choice is
+			if (currentChoice == i) {
+				addColor(options[i].second);
+				cout << " ->   ";
+			}
+			else {
+				cout << "    ";
+			}
+			cout << options[i].first << endl;
+			cout << termcolor::reset;
+		}
+
+		char input = _getch();
+		switch (tolower(input)) {
+		case 'w': // if by pressing w, you go under 0, reset to top of array
+			if (currentChoice - 1 < 0) {
+				currentChoice = options.size() - 1;
+				break;
+			}
+			currentChoice += -1;
+			break;
+
+		case 's':// if by pressing s, you go over options size, reset to bottom of array
+			if (currentChoice + 1 >= options.size()) {
+				currentChoice = 0;
+				break;
+			}
+			currentChoice += 1;
+			break;
+
+		case ' ':
+			accAns = true;
+			break;
+
+		default:
+			break;
+		}
+	}
+	return currentChoice;
+}
+
 
 

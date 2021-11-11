@@ -14,6 +14,8 @@
 #include "termcolor.hpp"
 #include "Position.h"
 #include "Tile.h"
+#include "ExternalData.h"
+#include "Visual.h"
 
 using std::cin;
 using std::cout;
@@ -94,6 +96,7 @@ bool isDropPointValid(vector<vector<Tile>> a_board, int a_dropPoint);
 
 // VISUAL ----------------------------------
 
+
 void addDotsToConsole(int dots, float duration);
 
 void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration);
@@ -106,3 +109,14 @@ void AIShowSlot(vector<vector<Tile>> a_board, bool empty);
 
 void assignWinnerTilesBoard(vector<vector<Tile>>& a_board, vector<Position> poses);
 
+void addColor(int col);
+
+void stats();
+
+void options();
+
+void mainMenu();
+
+int Choice(vector<string> options, string title);
+
+int colorChoice(std::pair<string, int> title);
