@@ -144,7 +144,6 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Position.cpp" />
     <ClCompile Include="Tile.cpp" />
-    <ClCompile Include="Visual.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DECLER.h" />
@@ -153,7 +152,6 @@
     <ClInclude Include="Position.h" />
     <ClInclude Include="termcolor.hpp" />
     <ClInclude Include="Tile.h" />
-    <ClInclude Include="Visual.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Players.txt" />

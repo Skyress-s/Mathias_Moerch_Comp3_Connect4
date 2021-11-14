@@ -23,22 +23,25 @@ using std::endl;
 using std::vector;
 using std::string;
 
+// a global drop point (x value for where to drop the piece in the game
+// i have this in global space to ensure that the xpos en saved between turns in the main game loop, 
+//int globalDP{ 3 };
 
-int globalDP{ 3 };
-int turn{};
-
+//global empty piece
 char EMPTY_PIECE = '*';
-//char activePlayer{};
+
+//global space for the active player
+//This is a bad practive to have things in global scope, but i feel it is worth it in this case becouse nearly all the functions need
+//a refrence to the activePlayer.symbol of color
 Player* activePlayer{};
+
+//constant for the filepath for the players log .txt file
 const string playersFile = "Players.txt";
 
 
 
 
-/// <summary>
-/// function for clearing the cin buffer for errors and emptying it of left over data
-/// Gotten from Johannes TA
-/// </summary>
+
 void ClearCin();
 
 
@@ -48,7 +51,7 @@ void mainMenu();
 
 // AI --------------------------------------
 
-void AnimateAIDecition(std::vector<std::vector<Tile>>& a_board, int dropPoint);
+void AnimateAIDecition(std::vector<std::vector<Tile>>& a_board, int dropPoint, int& currentDP);
 
 vector<int> minimax(vector<vector<Tile>> a_board, Position pos,  int depth, int alpha, int beta, bool maximizing);
 
@@ -60,14 +63,6 @@ int evalRowOfFour(vector<int> row, char player);
 
 // GAME LOGIC ------------------------------
 
-/// <summary>
-/// Can choose between the options vector, 
-/// the title will always print above the choices, space to accept answer where arrow is,
-/// W and S to go up and down
-/// </summary>
-/// <param name="options"></param>
-/// <param name="title"></param>
-/// <returns> the index of the answer chosen </returns>
 int Choice(vector<string> options, string title);
 int colorChoice( std::pair<string, int> title);
 
@@ -76,7 +71,7 @@ void InitGame(bool);
 
 void inputName(Player& a_player);
 
-void AnimateAIDecition(std::vector<std::vector<Tile>>& a_board, int dropPoint);
+void AnimateAIDecition(std::vector<std::vector<Tile>>& a_board, int dropPoint, int& currentDP);
 
 void mainGameloop(vector<vector<Tile>> a_board, bool a_activeAI);
 
@@ -103,9 +98,9 @@ void animateFall(vector<vector<Tile>> a_board, Position pos, int stepDuration);
 
 void drawBoard(vector<vector<Tile>> a_board);
 
-int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI);
+int playerChooseSlot(vector<vector<Tile>> a_board, bool a_activeAI, int& currentDP);
 
-void AIShowSlot(vector<vector<Tile>> a_board, bool empty);
+void AIShowSlot(vector<vector<Tile>> a_board, bool empty, int& currentDP);
 
 void assignWinnerTilesBoard(vector<vector<Tile>>& a_board, vector<Position> poses);
 
@@ -120,3 +115,5 @@ void mainMenu();
 int Choice(vector<string> options, string title);
 
 int colorChoice(std::pair<string, int> title);
+
+void inputPlayerSymbol(Player& a_player);

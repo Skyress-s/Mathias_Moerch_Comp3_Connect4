@@ -30,9 +30,6 @@
     <ClCompile Include="ExternalData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Visual.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="termcolor.hpp">
@@ -51,9 +48,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ExternalData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Visual.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
